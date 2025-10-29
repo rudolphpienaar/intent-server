@@ -1,0 +1,64 @@
+= Intent-Action Service for ChRIS: Engineering Brief
+:doctype: article
+:toc: left
+:toclevels: 2
+:sectnums:
+:icons: font
+:source-highlighter: rouge
+:figure-caption: Figure
+:table-caption: Table
+:imagesdir: figures
+
+// Author information
+:author: Rudolph Pienaar
+:email: rudolph.pienaar@childrens.harvard.edu
+:affiliation: Boston Children's Hospital, Harvard Medical School
+
+// Document metadata
+:revdate: {docdate}
+:revremark: Engineering Brief - Internal Technical Proposal
+
+[NOTE]
+====
+*Document Purpose:* This engineering brief presents a technical proposal for introducing an Intent-Action Service (IAS) to address architectural limitations in the ChRIS platform. The proposal is grounded in established software engineering principles and includes incremental validation strategy with explicit decision points.
+
+*Target Audience:* ChRIS development team and technical stakeholders
+
+*Length:* This document provides essential technical analysis in approximately 10 pages. For comprehensive academic treatment with full research methodology, see the research paper version.
+====
+
+include::sections/00_summary.adoc[]
+
+include::sections/01_current_problem.adoc[]
+
+include::sections/02_alternatives.adoc[]
+
+include::sections/03_ias_architecture.adoc[]
+
+<<<
+
+include::sections/04_objections.adoc[]
+
+include::sections/05_next_steps.adoc[]
+
+<<<
+
+== References
+
+. Amundsen, M. *Collection+JSON - Document Format.* July 2011. http://amundsen.com/media-types/collection/format/
+. Bogner, J., Kotstein, S., Pfaff, T. "Do RESTful API Design Rules Have an Impact on the Understandability of Web APIs?" *Empirical Software Engineering*, vol. 28, no. 6, November 2023.
+. Brooks, F.P. Jr. "No Silver Bullet: Essence and Accidents of Software Engineering." *Computer*, vol. 20, no. 4, pp. 10–19, April 1987.
+. [ChILI] FNNDSC. "ChILI: ChRIS Interactive Line Interface." GitHub repository. https://github.com/FNNDSC/ChILI Last commit: February 2025.
+. [chrs] FNNDSC. "chrs: ChRIS CLI Client and Rust Library." GitHub repository. https://github.com/FNNDSC/chrs 27 releases, last commit: September 2024.
+. Fielding, R.T. "Architectural Styles and the Design of Network-based Software Architectures." Doctoral dissertation, University of California, Irvine, 2000.
+. Ford, N., Parsons, R., Kua, P., Sadalage, P. *Building Evolutionary Architectures*, 2nd ed. O'Reilly, 2023.
+. Fowler, M. "Layering Principles." martinfowler.com, May 2010.
+. Fowler, M., Lewis, J. "Microservices." martinfowler.com, March 2014.
+. Kruchten, P., Nord, R.L., Ozkaya, I. "Technical Debt: From Metaphor to Theory and Practice." *IEEE Software*, vol. 29, no. 6, Nov/Dec 2012.
+. Lehman, M.M. "Programs, Life Cycles, and Laws of Software Evolution." *Proceedings of the IEEE*, vol. 68, no. 9, September 1980.
+. Newman, S. *Building Microservices*, 2nd ed. O'Reilly, 2021.
+. Parnas, D.L. "On the Criteria to Be Used in Decomposing Systems into Modules." *Communications of the ACM*, vol. 15, no. 12, December 1972.
+. [pipeline2cube] FNNDSC. "pipeline2cube: Register ChRIS Pipeline Files to CUBE." GitHub repository. https://github.com/FNNDSC/pipeline2cube Last commit: January 2023.
+. [python-chrisclient] FNNDSC. "python-chrisclient: Python Client Library for ChRIS API." GitHub repository. https://github.com/FNNDSC/python-chrisclient
+
+// End of document

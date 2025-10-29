@@ -1,0 +1,48 @@
+digraph CurrentArchitecture {
+    rankdir=TB;
+    splines=ortho;
+    node [shape=box, style="rounded,filled", fontname="Arial", fontsize=11];
+    edge [fontname="Arial", fontsize=10];
+
+    // User intents
+    viz_intent [label="User Visualization Intent\n(\"show feeds\")", fillcolor="#E8F4F8"];
+    behav_intent [label="User Behavioral Intent\n(\"anonymize\")", fillcolor="#E8F4F8"];
+
+    // ChRIS UI cluster
+    subgraph cluster_ui {
+        label="ChRIS UI";
+        style=filled;
+        fillcolor="#B3D9E6";
+        fontsize=13;
+        fontname="Arial Bold";
+
+        react [label="React Components\nhandles \"show feeds\" intent", fillcolor="#B3D9E6"];
+        translator [label="Intent Translator\n(embedded block)", fillcolor="#FFCCCC", style="rounded,filled,dashed"];
+        js_lib [label="JS Thin Client Library", fillcolor="#B3D9E6"];
+
+        react -> translator [style=invis];
+        translator -> js_lib [style=invis];
+    }
+
+    // CUBE cluster
+    subgraph cluster_cube {
+        label="CUBE";
+        style=filled;
+        fillcolor="#C8E6C9";
+        fontsize=13;
+        fontname="Arial Bold";
+
+        cj_api [label="Collection+JSON API", fillcolor="#C8E6C9"];
+        cube_internals [label="CUBE Python/Django Internals", fillcolor="#C8E6C9"];
+
+        cj_api -> cube_internals [style=invis];
+    }
+
+    // Flows
+    viz_intent -> react;
+    behav_intent -> react;
+
+    react -> cj_api [label="  visualization\n  flow"];
+    behav_intent -> translator;
+    translator -> cj_api [label="      multiple\n      orchestrated\n      calls", style=dashed, color="#555555"];
+}

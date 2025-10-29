@@ -1,0 +1,47 @@
+# Compact PDF theme for engineering brief
+# Reduces font sizes and spacing for tighter layout
+
+extends: default
+
+page:
+  margin: [0.5in, 0.65in, 0.5in, 0.65in]  # top, right, bottom, left
+  size: Letter
+
+base:
+  font_size: 9.5               # Reduced from default 10.5
+  line_height_length: 11       # Tighter line spacing
+  line_height: $base_line_height_length / $base_font_size
+
+heading:
+  font_size: 14                # Reduced heading sizes
+  h1_font_size: 18            # Title
+  h2_font_size: 13            # Main sections
+  h3_font_size: 11            # Subsections
+  h4_font_size: 10
+  margin_top: 8               # Reduced top margin
+  margin_bottom: 6            # Reduced bottom margin
+  line_height: 1.1
+
+prose:
+  margin_bottom: 6            # Reduced paragraph spacing
+
+list:
+  indent: 18                  # Slightly tighter list indent
+  item_spacing: 3             # Reduced spacing between list items
+
+code:
+  font_size: 8.5              # Smaller code font
+
+table:
+  cell_padding: [2, 3, 2, 3]  # Tighter cell padding
+
+caption:
+  font_size: 8.5
+  margin_bottom: 6
+
+sidebar:
+  padding: [8, 10, 8, 10]     # Tighter padding for note boxes
+
+thematic_break:
+  margin_top: 8
+  margin_bottom: 8

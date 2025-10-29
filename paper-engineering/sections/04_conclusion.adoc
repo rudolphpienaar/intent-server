@@ -1,0 +1,105 @@
+== Implementation Roadmap
+
+[NOTE]
+====
+This section presents a detailed implementation plan assuming successful validation of the IAS approach. For the research paper conclusion suitable for publication, see the Conclusion section at the end.
+====
+
+This paper has examined a fundamental architectural challenge in the ChRIS medical imaging platform: the impedance mismatch between CUBE's declarative Collection+JSON resource model and the procedural workflows that clients require. This mismatch, far from being unique to ChRIS, exemplifies a broader tension in distributed systems design between semantic expressiveness and operational accessibility. The analysis presented across four sections—introduction, methods, discussion, and this conclusion—demonstrates that this tension can be resolved through architectural completion rather than replacement, specifically through the introduction of an Intent-Action Service (IAS) that complements rather than supplants CUBE's declarative substrate.
+
+=== Summary of Findings
+
+The current architecture, documented in Section 2.1, concentrates orchestration logic within the ChRIS UI, producing predictable consequences: client development has stagnated, the UI has become a fragile monolith conflating presentation and business logic, and the original vision of ChRIS as a general-purpose computational platform accessible through diverse clients has failed to materialize. This state represents not a failure of execution but an architectural incompleteness: the system provides rich declarative semantics for describing computational entities but lacks a procedural layer for executing common workflows.
+
+Three architectural pathways were analyzed in detail. The status quo (Section 2.1), while operationally simple, perpetuates stagnation and offers no path toward ecosystem growth or agentic integration. Embedding intent logic within CUBE itself (Section 2.3) centralizes orchestration and simplifies security but compromises CUBE's declarative purity and couples fast-changing procedural workflows to slow-moving backend semantics. The external Intent-Action Service (Section 2.4) accepts higher operational complexity in exchange for clean separation of concerns, evolutionary independence, and natural alignment with emerging agentic computing patterns.
+
+The comparative analysis in Section 3.1 evaluated these alternatives across six dimensions: architectural purity, evolutionary velocity, operational complexity, security model, client ecosystem enablement, and readiness for LLM-driven interaction. The external IAS dominated on five dimensions, accepting only operational complexity as a trade-off. Section 3.2 situated this finding within the broader context of hypermedia API adoption, arguing that pure hypermedia systems failed not because they were conceptually flawed but because they lacked exactly the procedural complement that the IAS provides. Section 3.3 addressed anticipated objections, demonstrating that alternatives—abandoning Collection+JSON, consolidating functionality within CUBE, or refactoring within the UI—solve the wrong problems or perpetuate fundamental structural issues.
+
+Sections 3.4 and 3.5 explored implications. For the ChRIS ecosystem specifically, the IAS enables client diversity, UI simplification, and research accessibility. More broadly, the IAS architecture positions ChRIS as a substrate for agentic scientific computing, where LLMs translate natural language goals into structured intent calls. This capability transforms accessibility: computational workflows become expressible in domain language rather than infrastructure primitives, democratizing access to sophisticated analysis capabilities.
+
+=== Recommendation
+
+Based on this comprehensive analysis, we recommend the development and deployment of an external Intent-Action Service as the optimal path forward for the ChRIS ecosystem. This recommendation rests on three pillars:
+
+**Architectural soundness.** The IAS preserves CUBE's declarative Collection+JSON foundation while providing the procedural interface that clients require. This separation of concerns—declarative resources in CUBE, procedural workflows in IAS, presentation logic in clients—aligns with fundamental principles of modular system design established over decades of software engineering research [14][37]. The architecture is not a compromise but a completion: it provides what the system should have included from the beginning but lacked the resources to develop.
+
+**Evolutionary sustainability.** Software systems succeed or fail based on their capacity to evolve as requirements change and contexts shift [11]. The external IAS enables independent evolution: CUBE can refine its semantic model without impacting intent implementations; the IAS can add workflow capabilities without CUBE modifications; clients can innovate on presentation without understanding orchestration logic. This evolutionary independence directly addresses the architectural stagnation documented in Section 2.1 and provides the flexibility necessary for long-term viability.
+
+**Strategic positioning.** The rapid maturation of large language models with tool-use capabilities is transforming computational interfaces across domains. Systems that provide task-oriented APIs with clear semantic intent are naturally positioned to leverage these capabilities; those that require low-level orchestration or complex graph traversal are not. The IAS architecture anticipates this shift, making ChRIS not merely current but future-ready. As scientific computing increasingly incorporates AI-augmented workflows, ChRIS with IAS can serve as both a production platform and an architectural exemplar.
+
+=== Implementation Roadmap
+
+Realizing the IAS architecture requires phased development that balances immediate needs against long-term vision. We propose a three-phase approach:
+
+**Phase 1: Foundation (Months 1-4)**
+
+The initial phase establishes core infrastructure and proves the architectural concept. Key deliverables include:
+
+- **IAS service scaffold**: A containerized Python service (likely FastAPI-based given its async support and OpenAPI integration) with basic authentication, logging, and health endpoints
+- **AuthCore integration**: Complete integration with the `authCore` credential brokering system, implementing both external token validation and stored credential flows
+- **Reference intent implementations**: Three to five well-understood workflows (e.g., data anonymization, basic plugin execution, feed creation) implemented as proof-of-concept intents
+- **Client SDK**: A minimal Python client library demonstrating IAS consumption patterns
+- **Documentation**: Architectural documentation, API specifications (OpenAPI), and developer guides
+
+Success criteria for Phase 1: A functional IAS that can authenticate users, broker credentials, and execute reference intents against a development CUBE instance. This demonstrates feasibility and provides a concrete artifact for stakeholder evaluation.
+
+**Phase 2: Expansion (Months 5-10)**
+
+The second phase expands intent coverage and integrates with the ChRIS UI. Key deliverables include:
+
+- **Intent catalog expansion**: Implementation of 15-20 common workflows identified through UI code analysis and user research
+- **ChRIS UI integration**: Refactoring the ChRIS UI to invoke IAS endpoints for supported workflows, establishing patterns for dual-mode operation (IAS intents where available, direct CUBE calls otherwise)
+- **Intent governance framework**: Establishing conventions for intent naming, parameter schemas, versioning, and documentation
+- **Observability infrastructure**: Distributed tracing integration (OpenTelemetry), metrics dashboards (Prometheus/Grafana), and operational runbooks
+- **Performance optimization**: Caching strategies, connection pooling, and request batching to minimize latency overhead
+
+Success criteria for Phase 2: The ChRIS UI uses IAS for majority of common workflows; operational metrics demonstrate acceptable performance and reliability; developer documentation enables external contributions.
+
+**Phase 3: Ecosystem Enablement (Months 11-18)**
+
+The final phase focuses on ecosystem growth and advanced capabilities. Key deliverables include:
+
+- **Multi-language client SDKs**: JavaScript, Rust, and potentially Go client libraries enabling diverse client development
+- **Intent composition framework**: Support for complex workflows expressed as compositions of simpler intents
+- **LLM integration examples**: Reference implementations demonstrating natural language to intent translation using multiple LLM providers
+- **Plugin developer tools**: Utilities enabling plugin authors to expose their tools through intent interfaces
+- **Federation exploration**: Prototype implementations of multi-institutional scenarios with shared intent vocabularies
+
+Success criteria for Phase 3: External developers successfully contribute new clients and intent implementations; demonstrable LLM-driven workflow execution; clear path toward federated operation.
+
+This phased approach manages risk while delivering incremental value. Phase 1 establishes feasibility with minimal disruption; Phase 2 integrates with existing infrastructure and validates the approach at scale; Phase 3 enables the ecosystem growth and advanced capabilities that justify the architectural investment.
+
+=== Broader Implications
+
+While this analysis focuses on ChRIS specifically, the architectural pattern identified has applicability across distributed systems that balance semantic richness with operational accessibility.
+
+**Scientific computing platforms.** Many domain-specific platforms face similar challenges: they develop sophisticated data models that accurately represent domain entities but struggle to provide accessible operational interfaces. Climate modeling systems, genomic analysis platforms, astronomical data pipelines, and oceanographic computing infrastructure all exhibit this pattern. The declarative substrate plus procedural intent layer offers a general solution applicable across scientific domains. ChRIS, as a relatively mature platform with well-documented challenges, can serve as a proving ground for patterns that transfer to other contexts.
+
+**Enterprise integration architectures.** Institutional systems increasingly require integration across heterogeneous services with varying API paradigms. The IAS pattern—a task-oriented orchestration layer atop diverse backend services—mirrors enterprise service bus and API gateway patterns but with explicit focus on intent semantics rather than simple routing. Organizations struggling to integrate legacy systems with modern interfaces might leverage similar approaches, providing consistent intent-level APIs regardless of backend implementation details.
+
+**AI-augmented computing.** As discussed extensively in Section 3.5, the IAS architecture aligns naturally with LLM tool-use patterns. This alignment is not coincidental but reflects deeper compatibility between task-oriented APIs and natural language expression. As AI capabilities mature, systems will increasingly serve both human and agentic users. Architectures that expose clear intent semantics will integrate more readily than those requiring low-level orchestration. The IAS pattern thus represents not merely a solution to current challenges but preparation for emerging interaction paradigms.
+
+**Educational contexts.** Teaching computational methods, whether in university courses or professional training, requires balancing conceptual understanding with practical implementation. Students must learn both what systems do (conceptual models) and how to use them (operational interfaces). Systems that separate these concerns—declarative models for understanding, procedural intents for operation—naturally support pedagogical goals. ChRIS with IAS could serve educational contexts more effectively than current architecture permits, lowering barriers to computational literacy in medical imaging and related fields.
+
+=== Limitations and Caveats
+
+This analysis, while comprehensive, operates under several limitations that warrant acknowledgment. First, the recommendation rests on architectural reasoning and comparative evaluation rather than empirical measurement. While the arguments draw on established principles and documented patterns, actual performance characteristics, development effort, and operational complexity will become clear only through implementation. The phased roadmap proposed above implicitly addresses this limitation by enabling empirical validation at each stage.
+
+Second, the analysis focuses primarily on technical architecture and gives less attention to organizational and cultural factors. Successful implementation requires not only sound technical design but also stakeholder alignment, resource allocation, and change management. The ChRIS development community's capacity and willingness to adopt the IAS architecture will significantly influence outcomes. Technical merit alone does not guarantee adoption; complementary efforts in communication, training, and community engagement will be essential.
+
+Third, the forward-looking arguments regarding LLM integration and agentic computing rest on rapidly evolving technology landscapes. While current trends strongly suggest continued advancement in tool-use capabilities, future developments remain uncertain. The IAS architecture provides positioning for these capabilities but cannot guarantee that anticipated use cases will materialize exactly as described. However, the architecture's benefits—client ecosystem enablement, UI simplification, workflow accessibility—justify adoption even if agentic computing scenarios develop more slowly than projected.
+
+Finally, the analysis treats ChRIS as relatively isolated from broader medical imaging infrastructure and clinical workflows. Real deployments operate within complex institutional contexts involving hospital IT systems, regulatory requirements, vendor relationships, and established clinical practices. The IAS must eventually integrate with these contexts—authenticating against institutional identity providers, respecting data governance policies, interfacing with PACS systems and electronic health records. While these integration challenges lie outside this paper's scope, they will significantly influence practical adoption.
+
+=== Closing Perspective
+
+The challenge that ChRIS faces—balancing semantic expressiveness with operational accessibility—is neither unique nor fundamentally new. It reflects a recurring pattern in the evolution of computational systems: initial designs prioritize conceptual elegance and generality, but practical usage demands operational simplicity and task-specific affordances. This tension drove the development of high-level programming languages atop assembly code, relational query languages atop file systems, and graphical interfaces atop command-line tools. In each case, the solution was not to abandon the lower-level abstraction but to complement it with a higher-level interface appropriate to common usage patterns.
+
+The Intent-Action Service represents this complementary layer for ChRIS. It does not replace CUBE's declarative semantics but augments them with procedural capabilities. It does not simplify by discarding complexity but by organizing it appropriately: declarative descriptions of computational entities in CUBE, procedural orchestration of workflows in IAS, presentation of information in client interfaces. This organization reflects not compromise but maturity—the recognition that different concerns require different architectural homes.
+
+The path forward is clear. ChRIS requires an Intent-Action Service to fulfill its original vision as a general-purpose platform for distributed computation accessible through diverse clients. The external architecture proposed here provides this capability while preserving CUBE's philosophical foundation and positioning the platform for emerging interaction paradigms. Implementation will require sustained effort and community coordination, but the architectural foundation is sound, the benefits are substantial, and the alternative pathways offer no comparable combination of technical merit and strategic positioning.
+
+Beyond ChRIS specifically, this work contributes to ongoing discussions about hypermedia APIs, microservice architectures, and the design of systems that serve both human and agentic users. The central insight—that declarative and procedural interfaces are complementary rather than competing—has applicability across domains and platforms. As computational systems increasingly mediate between human intentions and machine capabilities, architectures that explicitly recognize and accommodate this mediation will prove more durable than those that do not.
+
+The Intent-Action Service completes the ChRIS architecture by providing what it always needed: a bridge between the elegance of its semantic model and the pragmatism of operational workflows. With this bridge in place, ChRIS can realize its potential not merely as a medical imaging platform but as an exemplar of how distributed scientific computing systems can balance sophistication with accessibility, serving researchers across the expertise spectrum while positioning for the agentic computing paradigms now emerging across scientific and clinical domains.
+

@@ -1,0 +1,52 @@
+=== 2.1 Current Architecture (Status Quo)
+
+Given that the ChRIS UI has effectively become the only main CUBE client, the intent/Cj impedance mismatch has resulted in the entire procedural mapping burden spreading unmanaged inside the interface. All user activity whether for simple visualization (“show feeds”) or for more complex actions (“anonymize data”) flows through the same system boundary. Within this boundary, fragments of logic have evolved organically as development attempted to express high-level procedural goals over CUBE’s declarative Collection+JSON (Cj) graph. These fragments collectively function as a de facto *Intent Translator* not a formal module, but a scattered pattern of helper functions, callback chains, and orchestration logic mediating between user actions and CUBE’s low-level resource operations.
+
+In reality, the architecture is even less structured than the schematic below suggests. There is no distinct Intent Translator component; procedural and visualization logic are frequently interleaved in the same source modules. The following simplified diagram presents an idealized view, useful for reasoning about where intent translation currently resides within the ChRIS UI.
+
+....
+┌─────────────────────────┐              ┌─────────────────────────┐
+│  user visualization     │              │  user behavioral        │
+│  intent ("show feeds")  │              │  intent ("anonymize")   │
+└────────────┬────────────┘              └────────────┬────────────┘
+             │                                        │
+             │                                        │
+             │                                        │
+   ┌─────────┼────────────────────────────────────────┼──────────┐
+   │         │                 ChRIS UI               │          │
+   ├─────────┼────────────────────────────────────────┼──────────┤
+   │         │            React components            │          │
+   │         │        handles "show feeds" intent     │          │
+   ├─────────┼────────────────────────────────────────┼──────────┤
+   │         │                                        │          │
+   │         │                             ╔══════════▼════════╗ │
+   │         │                             ║ Intent Translator ║ │
+   │         │                             ║ (embedded block)  ║ │
+   │         │                             ╚══╦═══╦═══╦═══╦════╝ │
+   │         │                                │   │   │   │      │
+   │         │                                │   │   │   │      │
+   ├─────────┼────────────────────────────────┼───┼───┼───┼──────┤
+   │         │    JS thin client library      │   │   │   │      │
+   └─────────┼────────────────────────────────┼───┼───┼───┼──────┘
+             │                                │   │   │   │
+             │                                │   │   │   │
+   ┌─────────┼────────────────────────────────┼───┼───┼───┼──────┐
+   │         │                  CUBE          │   │   │   │      │
+   ├─────────┼────────────────────────────────┼───┼───┼───┼──────┤
+   │         ▼         Collection+JSON API    ▼   ▼   ▼   ▼      │
+   ├─────────────────────────────────────────────────────────────┤
+   │                                                             │
+   │       CUBE Python/Django internals                          │
+   │                                                             │
+   └─────────────────────────────────────────────────────────────┘
+....
+
+While the diagram idealizes structure for clarity, in practice the system is considerably more entangled. The lack of a distinct intent layer has led to procedural logic and presentation code being tightly coupled. This geometry reveals several key points:
+
+1. **All user interactions traverse the UI boundary.** The “show feeds” intent flows through the React layer and JS library to CUBE, while “anonymize data” enters the Intent Translator block before being expanded into multiple Collection+JSON operations.  
+2. **The Intent Translator is embedded inside the presentation tier.** It operates below React components but above the JS library, creating a tangled mix of control and presentation logic.  
+3. **The procedural explosion occurs inside the client.** Each behavioral intent must fan out into multiple REST calls to CUBE, requiring constant maintenance as CUBE’s semantics evolve.  
+4. **The pattern mirrors monolithic orchestration.** The UI has effectively become a monolith that encodes procedural knowledge of how to "speak CUBE," instead of remaining a thin consumer of a stable API.
+
+This architecture, though functional, has produced developer fatigue and architectural fragility. It explains the stagnation of alternate clients: every new framework must replicate the same mapping logic. The following subsections explore how this procedural interpreter might be migrated downward—first into CUBE itself, then into an independent Intent–Action Service (IAS). This drift of orchestration logic into the UI is a classic layering failure in distributed system design [16][22].
+

@@ -1,0 +1,17 @@
+== Executive Summary
+
+=== The Problem
+
+The ChRIS platform faces an architectural impedance mismatch between its declarative Collection+JSON resource model and procedural workflow requirements of clients. CUBE's hypermedia API excels at representing entities, but clients must independently implement complex orchestration logic to translate user intentions into multi-step REST operations. This has produced: *Client ecosystem stagnation* (UI remains primary viable client; Python client library [python-chrisclient] experienced extended stagnation 2022-2024; Rust client [chrs] stagnated after September 2024; CLI experiments like ChILI [ChILI] showed promise but development halted February 2025; utility tools like pipeline2cube [pipeline2cube] inactive since January 2023), *UI architectural degradation* (presentation conflated with orchestration, violating separation of concerns [Parnas 1972]), and *maintenance complexity* (scattered orchestration increases cognitive load, representing compounding technical debt [Kruchten et al. 2012]). These symptoms align with Lehman's Laws [Lehman 1980]: systems failing to reduce coupling experience declining adaptability.
+
+=== The Recommendation
+
+We recommend introducing an *Intent-Action Service (IAS)*, an external orchestration layer translating high-level procedural intents into coordinated CUBE operations. The IAS provides task-oriented APIs exposing domain operations (anonymize, analyze, convert) rather than infrastructure primitives (feeds, plugins, files). This architecture: (1) *preserves* CUBE's Collection+JSON foundation while adding procedural interpretation; (2) *enables* client ecosystem revival through centralized orchestration; (3) *liberates* the UI to pure presentation layer; (4) *supports* incremental validation (one intent at a time) allowing empirical evaluation before full commitment.
+
+The IAS follows Backend-for-Frontend patterns [Newman 2021] and addresses the architectural incompleteness limiting hypermedia adoption [Bogner et al. 2023]: declarative resource models alone cannot satisfy procedural client requirements.
+
+=== Constraints and Context
+
+ChRIS/CUBE serves as a *general-purpose distributed compute platform* for containerized workflow orchestration across federated infrastructure (not domain-specific to medical imaging but applicable to physical oceanography, climate research, genomics, or any field requiring computational workflow management). This generality is encoded in CUBE's Collection+JSON hypermedia approach, which models workflows as resources and relationships rather than hardcoded procedures.
+
+ChRIS is a production system with institutional dependencies and accumulated domain knowledge in CUBE's API. Complete Collection+JSON replacement would require massive re-engineering with unclear benefits and no incremental migration path. The IAS works *with* existing infrastructure, adding procedural interpretation capability without discarding the declarative foundation that supports general-purpose applicability. The recommendation accepts operational complexity (additional service deployment) in exchange for architectural clarity, evolutionary independence, and ecosystem enablement, a trade-off characteristic of well-designed distributed systems [Parnas 1972; Brooks 1987].

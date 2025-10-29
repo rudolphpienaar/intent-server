@@ -1,0 +1,14 @@
+== Intent-Action Service Architecture
+
+The IAS provides a procedural interpretation layer between clients and CUBE's declarative API, offering task-oriented operations rather than infrastructure primitives.
+
+.External IAS Architecture
+image::fig04_external_ias_v2.png[IAS Architecture,width=100%]
+
+Three tiers: *Clients* (UI, Python, CLI) invoke intent endpoints; *IAS* translates requests into CUBE API sequences; *CUBE* remains authoritative resource model with unchanged Collection+JSON API.
+
+*API example:* `POST /intents/anonymize-and-analyze {"patient_id": "12345", "modality": "MRI", "analysis_pipeline": "freesurfer"}` encapsulates 8-15 CUBE operations. Intent APIs use domain terminology (patient IDs) not CUBE identifiers (feed UUIDs).
+
+*Implementation:* Standard microservices [Newman 2021]: containerized deployment, stateless operation, authentication delegation, centralized observability, incremental adoption.
+
+*Benefits:* Shared orchestration (eliminates duplication), evolutionary independence (separate release schedules [Parnas 1972]), testability (mock APIs), progressive disclosure (intents for common workflows, CUBE for advanced control). Backend-for-Frontend pattern resolving hypermedia-procedural impedance mismatch.

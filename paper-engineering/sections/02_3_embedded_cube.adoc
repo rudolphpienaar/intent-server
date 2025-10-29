@@ -1,0 +1,55 @@
+== 2.3 Embedding Intent Logic Inside CUBE
+
+A second architectural pathway is to embed the intent-translation functionality directly into CUBE itself. This approach keeps the declarative Collection+JSON (Cj) model intact while extending CUBE with an additional *Intent API* and *Intent Logic Handler* layer. In this design, the CUBE server becomes responsible for translating user-level procedural intents—such as “anonymize data” or “run workflow”—into actual value by directly manipulating internal Python/Django objects and data. This avoids the intermediate complexity of translating intent into Cj semantics and executing multi-step REST transactions. The logic that previously lived implicitly and inconsistently inside the UI would now execute within CUBE’s backend, tightly coupled to its existing Python/Django infrastructure.
+
+The figure below represents this modified architecture. Note that the Intent Logic Handler is a well-defined component internal to CUBE rather than an ad-hoc block buried inside the UI.
+
+[listing]
+....
+┌─────────────────────────┐              ┌─────────────────────────┐
+│  user visualization     │              │  user behavioral        │
+│  intent                 │              │  intent                 │
+└────────────┬────────────┘              └────────────┬────────────┘
+             │                                        │
+             │                                        │
+             │                                        │
+   ┌─────────┼────────────────────────────────────────┼──────────┐
+   │         │                 ChRIS UI               │          │
+   ├─────────┼────────────────────────────────────────┼──────────┤
+   │         │            React components            │          │
+   ├─────────┼────────────────────────────────────────┼──────────┤
+   │         │                                        │          │
+   │         │                                        │          │
+   │         │                                        │          │
+   ├─────────┼────────────────────────────────────────┼──────────┤
+   │         │    js thin client library              │          │
+   └─────────┼────────────────────────────────────────┼──────────┘
+             │                                        │   
+             │                                        │
+   ┌─────────┼────────────────────────────────────────┼──────────┐
+   │         │                  CUBE                  │          │
+   ├─────────┼─────────────────────────────┬──────────┼──────────┤
+   │         ▼      collection+json API    │   intent ▼  API     │
+   ├───────────────────────────────────────┴──────────┼──────────┤
+   │                                        ╔═════════▼═════════╗│
+   │                                        ║  intent           ║│
+   │                                        ║  logic handler    ║│
+   │                                        ╚══╦═══╦═══╦═══╦════╝│
+   │                                           ▼   ▼   ▼   ▼     │
+   │        CUBE Python/Django internals                         │
+   │                                                             │
+   └─────────────────────────────────────────────────────────────┘
+....
+
+Embedding the intent interpreter within CUBE centralizes all procedural orchestration into the backend. Client interfaces—whether the ChRIS UI or future SDKs—would no longer need to manually sequence low-level REST calls. Instead, they could issue compact, declarative intent commands such as "launch workflow" or "anonymize feed," allowing CUBE to execute these directly through its internal data models. This eliminates the overhead of generating Cj-compliant transactions for procedural actions, improving speed and internal coherence. The immediate advantages are clear: duplication across clients is eliminated, orchestration logic becomes canonical, and the API surface simplifies.
+
+From a security and maintenance standpoint, this consolidation is elegant. CUBE already manages authentication, authorization, and audit trails through its Django-based backend. Embedding orchestration logic under this same control boundary maintains unified RBAC enforcement and inherits established reliability. This mirrors arguments for service cohesion within bounded contexts described in early microservice literature [22][24]. Moreover, by reducing dependence on multiple orchestration clients, it temporarily relieves developer load, allowing UI authors to focus solely on presentation logic rather than CUBE semantics.
+
+However, this approach also redefines the very philosophy of CUBE. CUBE's original power lies in being a *declarative substrate* that describes the relationships between entities—feeds, plugins, users, and data—without dictating *how* to act upon them. As argued in classical modular design theory [14], resilient systems separate description from behavior; embedding intent logic within CUBE collapses this separation. Procedural evolution, inherently faster and more experimental, would now depend on CUBE's slower release cadence and backward-compatibility guarantees. The inevitable result is coupling between the evolving "how" of orchestration and the stable "what" of resource description.
+
+This tight integration introduces risks of architectural stagnation. Empirical studies on software evolution show that when systems merge fast-changing and stable components, they tend to ossify over time [11]. By internalizing intent evaluation, CUBE risks drifting toward monolithic behavior, where each new orchestration path requires backend modification. This is particularly problematic since intent spaces are unbounded: every new workflow or user-facing operation could demand additional orchestration primitives inside CUBE. What begins as convenience can quickly become rigidity.
+
+Furthermore, by bypassing the Cj model for procedural intents, CUBE would fracture its own API semantics. Clients expecting a purely declarative, hypermedia-driven interface would now confront a parallel procedural interface that behaves differently. This duality could confuse developers, complicate documentation, and blur the conceptual boundary between resource description and orchestration. Over time, such inconsistencies may inhibit external contribution and innovation.
+
+From a long-term perspective, embedding intent logic trades simplicity for agility. It is efficient in the short term but scales poorly as procedural requirements diversify. The backend becomes an operational bottleneck and an innovation choke point. While embedding orchestration logic within CUBE is a pragmatic step—especially as an intermediate transition—it lacks the flexibility and extensibility demanded by a multi-service architecture. As Wirth cautioned [25], unchecked accumulation of complexity eventually undermines the simplicity that once made a system successful. A leaner, externalized design is ultimately required to sustain evolutionary velocity.
+

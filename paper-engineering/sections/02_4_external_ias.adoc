@@ -1,0 +1,90 @@
+=== 2.4 External Intent-Action Service (IAS)
+
+The third architectural path introduces an independent Intent-Action Service (IAS) positioned as a dedicated intermediary layer between clients and CUBE. Unlike embedding orchestration logic within the UI (Section 2.1) or absorbing it into CUBE itself (Section 2.3), this approach recognizes intent translation as a distinct architectural concern deserving its own service boundary. The IAS provides a procedural, task-oriented API to clients while preserving CUBE's declarative Collection+JSON substrate intact. This design embodies what Parnas termed *information hiding* [14]: each layer encapsulates concerns appropriate to its responsibility, exposing only what its consumers require.
+
+The figure below illustrates this externalized architecture. Note that visualization intents bypass the IAS entirely, flowing directly to CUBE's Cj API, while behavioral intents route through the IAS for orchestration.
+
+....
+┌─────────────────────────┐              ┌─────────────────────────┐
+│  user visualization     │              │  user behavioral        │
+│  intent ("show feeds")  │              │  intent ("anonymize")   │
+└────────────┬────────────┘              └────────────┬────────────┘
+             │                                        │
+             │                                        │
+             │                                        │
+   ┌─────────┼────────────────────────────────────────┼──────────┐
+   │         │                 ChRIS UI               │          │
+   ├─────────┼────────────────────────────────────────┼──────────┤
+   │         │            React components            │          │
+   │         │         (presentation only)            │          │
+   ├─────────┼────────────────────────────────────────┼──────────┤
+   │         │    js thin client library              │          │
+   └─────────┼────────────────────────────────────────┼──────────┘
+             │                                        │
+             │                                        │
+             │                              ┌─────────┼──────────┐
+             │                              │         │   IAS    │
+             │                              │  ╔══════▼════════╗ │
+             │                              │  ║ Intent Logic  ║ │
+             │                              │  ║ Orchestrator  ║ │
+             │                              │  ╚══╦═══╦═══╦════╝ │
+             │                              │     │   │   │      │
+             │                              └─────┼───┼───┼──────┘
+             │                                    │   │   │
+             │                                    │   │   │
+   ┌─────────┼────────────────────────────────────┼───┼───┼──────┐
+   │         │                  CUBE              │   │   │      │
+   ├─────────┼────────────────────────────────────┼───┼───┼──────┤
+   │         ▼         Collection+JSON API        ▼   ▼   ▼      │
+   ├─────────────────────────────────────────────────────────────┤
+   │       CUBE Python/Django internals                          │
+   │       (declarative substrate preserved)                     │
+   └─────────────────────────────────────────────────────────────┘
+....
+
+This geometry reveals several critical properties:
+
+1. **Dual-path routing preserves CUBE's declarative purity.** Simple queries—"show feeds," "list plugins"—continue to use CUBE's hypermedia API directly. Only complex procedural workflows—"anonymize data," "execute pipeline"—invoke the IAS. This selective routing maintains CUBE's original design philosophy while addressing the orchestration gap.
+
+2. **The IAS operates as a Backend-for-Frontend (BFF).** Clients interact with a simplified, task-oriented interface rather than navigating CUBE's resource graph. This pattern, documented extensively by Newman [23] and Richardson [26], allows the frontend to remain focused on presentation while delegating orchestration to a specialized backend proxy that understands both client intent and backend semantics.
+
+3. **Service boundaries align with evolutionary rates.** Intent logic evolves rapidly as workflows mature and new use cases emerge. CUBE's declarative model evolves slowly as core entities stabilize. By separating these concerns into independent services, the architecture enables what Ford et al. define as *evolutionary architecture* [38]: each component can change at its natural pace without cascading modification across boundaries. This directly addresses the coupling problem identified in Sections 2.1 and 2.3.
+
+4. **Orchestration state resides outside CUBE.** The IAS manages stateful workflows—tracking progress, handling retries, coordinating multi-step transactions—without polluting CUBE's stateless REST semantics. This mirrors the saga pattern introduced by Garcia-Molina and Salem [27], where a coordinator service sequences operations across distributed resources while maintaining transactional consistency through compensating actions.
+
+==== Architectural Advantages
+
+The externalized IAS model offers several structural benefits over the alternatives analyzed in prior sections.
+
+*Separation of concerns.* CUBE remains a pure declarative substrate describing entities and relationships. The IAS provides procedural orchestration. Clients implement presentation and user interaction. Each service boundary encapsulates a single responsibility, reducing coupling and increasing cohesion. This separation directly applies Evans's bounded context principle [28]: each service operates within a well-defined semantic boundary, minimizing the conceptual surface area that developers must understand.
+
+*Loose coupling and independent deployability.* Because the IAS communicates with CUBE exclusively through its REST API, the two services remain loosely coupled. CUBE can be upgraded, scaled, or even reimplemented without affecting IAS logic, provided the API contract is preserved. Conversely, intent workflows can be added, modified, or deprecated without CUBE involvement. This operational independence, central to microservices philosophy [24], reduces deployment risk and accelerates iteration velocity.
+
+*Client ecosystem enablement.* With the IAS providing a stable procedural interface, diverse clients—web UIs, CLI tools, mobile apps, automation scripts—can share orchestration logic without duplication. A Python client and a JavaScript client invoke the same IAS endpoint and receive the same behavior. This eliminates the fragmentation described in Section 2.1, where each client reimplemented orchestration independently. The resulting ecosystem effect mirrors Conway's Law in reverse [29]: by structuring the architecture to enable diverse teams, the system naturally supports diverse implementations.
+
+*Observability and operational control.* Centralizing orchestration in the IAS creates a natural instrumentation point. Intent requests, workflow progress, error rates, and latency distributions can be monitored at the service boundary. This visibility, difficult to achieve when orchestration is scattered across clients or embedded within CUBE, enables operational insights and performance optimization. The IAS becomes both an orchestration engine and a telemetry hub.
+
+==== Additional Consideration: Potential for LLM Integration
+
+An additional potential benefit of the IAS architecture is compatibility with LLM-driven tooluse patterns. Task-oriented intent endpoints with clear semantic meaning may prove easier for language models to invoke than navigating hypermedia graph structures [30][31][32]. Where direct CUBE usage requires multi-step orchestration across Collection+JSON links, IAS intents encapsulate workflows as single operations. Whether this theoretical advantage translates to practical benefit depends on LLM capability evolution, API design quality, and user acceptance—all of which require empirical validation beyond this paper's scope. We note this possibility as a secondary benefit but emphasize that the IAS proposal rests primarily on addressing current client ecosystem challenges rather than speculative AI integration scenarios.
+
+==== Implementation Considerations
+
+Deploying the IAS as an independent service introduces practical considerations absent from the embedded alternatives. The service must maintain its own API contract, authentication and authorization mechanisms, error-handling semantics, and operational instrumentation. These responsibilities, while increasing system complexity, also confer modularity and evolutionary flexibility.
+
+From a security standpoint, the IAS architecture introduces authentication and credential management challenges. The service must authenticate clients, authorize intent-level operations, and interact with CUBE on behalf of users without creating credential distribution vulnerabilities. One possible solution is credential brokering rather than credential storage: systems like `authCore` [34] provide encrypted per-user credential vaults where services request operations without handling raw credentials. This defense-in-depth approach ensures that compromising the IAS exposes no credential material while maintaining comprehensive audit trails. However, multiple authentication strategies remain viable pending implementation requirements and security review.
+
+The IAS API design should prioritize clarity and usability. Where CUBE's Cj API exposes resources and link relations, the IAS exposes *tasks* and *workflows*. Endpoints like `POST /intents/anonymize`, `GET /workflows/{id}/status`, and `POST /intents/execute-pipeline` convey procedural semantics directly. OpenAPI specifications [33] or GraphQL schemas provide machine-readable contracts, enabling client code generation and reducing integration friction. This procedural clarity stands in deliberate contrast to CUBE's declarative model, offering clients the interface style most appropriate to their needs.
+
+Operational deployment follows standard microservices practice. The IAS runs as a containerized service, horizontally scalable and independently versioned. It communicates with CUBE over HTTP, introducing network latency but gaining deployment independence. Kubernetes, Docker Swarm, or similar orchestration platforms manage service lifecycle, health checks, and traffic routing. Observability tooling—Prometheus, Grafana, OpenTelemetry—instruments request flows, enabling performance monitoring and debugging across service boundaries.
+
+==== Trade-offs and Limitations
+
+While the externalized IAS model addresses many architectural shortcomings, it introduces trade-offs. The additional service layer increases operational complexity: another component to deploy, monitor, version, and debug. Network communication between IAS and CUBE adds latency compared to in-process orchestration (as in Section 2.3). Distributed system failure modes—network partitions, timeout cascades, inconsistent state—become operational concerns requiring careful design and testing.
+
+Moreover, the IAS must evolve its own API contract over time. Unlike the embedded approach where orchestration logic remains internal to CUBE, the IAS exposes a public interface that clients depend upon. Breaking changes require coordination and migration planning, much like CUBE's own API. This shifts complexity from implementation (spread across clients) to interface design (centralized in the IAS), a trade that favors ecosystem consistency but demands disciplined API governance.
+
+Despite these limitations, the externalized model offers the most sustainable path forward. It preserves CUBE's philosophical integrity as a declarative substrate, provides clients with the procedural interface they require, and positions the ChRIS ecosystem to leverage emerging AI capabilities. The additional operational complexity is a manageable cost for the architectural clarity and evolutionary flexibility gained.
+
+The following Discussion section will evaluate these three approaches—status quo (2.1), embedded (2.3), and externalized (2.4)—in comparative terms, arguing ultimately that the IAS represents the optimal balance between expressive power, operational pragmatism, and long-term adaptability.
+

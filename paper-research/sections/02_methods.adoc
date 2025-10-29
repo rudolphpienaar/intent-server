@@ -1,0 +1,4 @@
+== 2. Methods
+
+This section analyzes the current ChRIS client architecture and explores three logical approaches to addressing the procedural–declarative mismatch between user intent and the Collection+JSON (Cj) API of CUBE. The first subsection describes the current system as implemented in the ChRIS UI; subsequent subsections will evaluate alternative designs that progressively externalize intent translation from the UI to CUBE and, finally, to an independent Intent–Action Service (IAS).
+

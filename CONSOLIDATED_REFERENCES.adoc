@@ -1,0 +1,77 @@
+== References
+
+[1] M. Amundsen, "Collection+JSON - Document Format," July 2011. [Online]. Available: http://amundsen.com/media-types/collection/format/
+
+[2] P. Sturgeon, "JSON API, OpenAPI and JSON Schema Working in Harmony," APIs You Won't Hate blog, September 2018. [Online]. Available: https://apisyouwonthate.com/blog/json-api-openapi-and-json-schema/
+
+[3] GraphQL Foundation, "GraphQL Specification," October 2021. [Online]. Available: https://spec.graphql.org/October2021/
+
+[4] gRPC Authors, "gRPC: A High Performance, Open Source Universal RPC Framework." [Online]. Available: https://grpc.io/docs/
+
+[5] F. Bülthoff and M. Maleshkova, "RESTful or RESTless – Current State of Today's Top Web APIs," in _Proc. European Semantic Web Conference (ESWC)_, CEUR Workshop Proceedings, vol. 1165, pp. 42–51, 2014.
+
+[6] J. Bogner, S. Kotstein, and T. Pfaff, "Do RESTful API Design Rules Have an Impact on the Understandability of Web APIs?" _Empirical Software Engineering_, vol. 28, no. 6, article 132, November 2023. DOI: 10.1007/s10664-023-10367-y
+
+[7] Nordic APIs, "Unraveling the Mystery: Understanding HATEOAS," January 8, 2024. [Online]. Available: https://nordicapis.com/unraveling-the-mystery-understanding-hateoas/
+
+[8] A. Reiser, "Why HATEOAS Is Useless and What That Means for REST," _Medium_, February 27, 2018. [Online]. Available: https://medium.com/@andreasreiser94/why-hateoas-is-useless-and-what-that-means-for-rest-a65194471bc8
+
+[9] Devōt, "Why Hypermedia Is Still a Plausible Option," Devot.team blog, 2024. [Online]. Available: https://devot.team/blog/hateoas
+
+[10] R. T. Fielding, "Architectural Styles and the Design of Network-based Software Architectures," Ph.D. dissertation, University of California, Irvine, 2000. [Online]. Available: https://www.ics.uci.edu/~fielding/pubs/dissertation/top.htm
+
+[11] M. M. Lehman, "Programs, Life Cycles, and Laws of Software Evolution," _Proceedings of the IEEE_, vol. 68, no. 9, pp. 1060–1076, September 1980. DOI: 10.1109/PROC.1980.11805
+
+[12] P. Kruchten, R. L. Nord, and I. Ozkaya, "Technical Debt: From Metaphor to Theory and Practice," _IEEE Software_, vol. 29, no. 6, pp. 18–21, November/December 2012. DOI: 10.1109/MS.2012.167
+
+[13] F. P. Brooks Jr., "No Silver Bullet: Essence and Accidents of Software Engineering," _Computer_, vol. 20, no. 4, pp. 10–19, April 1987. DOI: 10.1109/MC.1987.1663532
+
+[14] D. L. Parnas, "On the Criteria to Be Used in Decomposing Systems into Modules," _Communications of the ACM_, vol. 15, no. 12, pp. 1053–1058, December 1972. DOI: 10.1145/361598.361623
+
+[15] K. H. Bennett, V. Rajlich, and N. Wilde, "Software Evolution and the Staged Model of the Software Lifecycle," in M. Zelkowitz (Ed.), _Advances in Computers_, vol. 56, pp. 1–54. Academic Press, 2002. ISBN 0-12-012156-5.
+
+[16] M. Fowler, "Layering Principles," _martinfowler.com_, May 18, 2010. [Online]. Available: https://martinfowler.com/bliki/LayeringPrinciples.html
+
+[17] R. Li, M. Soliman, P. Liang, and P. Avgeriou, "Symptoms of Architecture Erosion in Code Reviews: A Study of Two OpenStack Projects," in _Proc. 19th IEEE International Conference on Software Architecture (ICSA)_, 2022. arXiv:2201.01184.
+
+[18] A. MacCormack and D. J. Sturtevant, "Technical Debt and System Architecture: The Impact of Coupling on Defect-Related Activity," _Journal of Systems and Software_, vol. 120, pp. 170–182, October 2016. DOI: 10.1016/j.jss.2016.06.007
+
+[19] T. Mens, M. Wermelinger, S. Ducasse, S. Demeyer, R. Hirschfeld, and M. Jazayeri, "Challenges in Software Evolution," in _Proc. 8th International Workshop on Principles of Software Evolution (IWPSE)_, pp. 13–22. IEEE Computer Society, 2005. DOI: 10.1109/IWPSE.2005.7
+
+[20] A. Molnar and S. Motogna, "Long-Term Evaluation of Technical Debt in Open-Source Software," in _Proc. ACM/IEEE International Symposium on Empirical Software Engineering and Measurement (ESEM)_, 2020. arXiv:2007.13422.
+
+[21] M. Nayebi et al., "A Longitudinal Study of Identifying and Paying Down Architectural Debt," arXiv:1811.12904, 2018.
+
+[22] S. Newman, _Building Microservices: Designing Fine-Grained Systems_. O'Reilly Media, 2015.
+
+[23] S. Newman, _Building Microservices: Designing Fine-Grained Systems_, 2nd ed. O'Reilly Media, 2021.
+
+[24] M. Fowler and J. Lewis, "Microservices: A Definition of This New Architectural Term," _martinfowler.com_, 2014. [Online]. Available: https://martinfowler.com/articles/microservices.html
+
+[25] N. Wirth, "A Plea for Lean Software," _IEEE Computer_, vol. 28, no. 2, pp. 64–68, 1995.
+
+[26] C. Richardson, _Microservices Patterns: With Examples in Java_. Manning Publications, 2018.
+
+[27] H. Garcia-Molina and K. Salem, "Sagas," in _Proc. ACM SIGMOD International Conference on Management of Data_, San Francisco, CA, USA, 1987, pp. 249–259.
+
+[28] E. Evans, _Domain-Driven Design: Tackling Complexity in the Heart of Software_. Addison-Wesley, 2003.
+
+[29] M. Conway, "How Do Committees Invent?" _Datamation_, vol. 14, no. 4, pp. 28–31, 1968.
+
+[30] T. Schick, J. Dwivedi-Yu, R. Dessì, R. Raileanu, M. Lomeli, E. Hambro, L. Zettlemoyer, N. Cancedda, and T. Scialom, "Toolformer: Language Models Can Teach Themselves to Use Tools," arXiv preprint arXiv:2302.04761, 2023.
+
+[31] S. Yao, J. Zhao, D. Yu, N. Du, I. Shafran, K. Narasimhan, and Y. Cao, "ReAct: Synergizing Reasoning and Acting in Language Models," in _International Conference on Learning Representations (ICLR)_, 2023.
+
+[32] OpenAI, "Function Calling and Other API Updates," _OpenAI Blog_, June 2023. [Online]. Available: https://openai.com/blog/function-calling-and-other-api-updates
+
+[33] OpenAPI Initiative, "OpenAPI Specification," Version 3.1.0, 2021. [Online]. Available: https://spec.openapis.org/oas/v3.1.0
+
+[34] R. Pienaar, "`authCore`: Framework-Agnostic Credential Brokering for Python Applications," GitHub Repository, 2024. [Online]. Available: https://github.com/rudolphpienaar/authCore
+
+[35] M. Stonebraker and L. A. Rowe, "The Design of POSTGRES," in _Proc. 1986 ACM SIGMOD International Conference on Management of Data_, Washington, D.C., USA, May 1986, pp. 340–355.
+
+[36] D. A. Norman, _The Design of Everyday Things: Revised and Expanded Edition_. Basic Books, 2013.
+
+[37] E. Gamma, R. Helm, R. Johnson, and J. Vlissides, _Design Patterns: Elements of Reusable Object-Oriented Software_. Addison-Wesley, 1994.
+
+[38] N. Ford, R. Parsons, P. Kua, and P. Sadalage, _Building Evolutionary Architectures: Support Constant Change_, 2nd ed. O'Reilly Media, 2021.

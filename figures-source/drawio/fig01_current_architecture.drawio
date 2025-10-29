@@ -1,0 +1,105 @@
+<mxfile host="app.diagrams.net" modified="2025-10-28T00:00:00.000Z" agent="Claude" version="24.0.0">
+  <diagram name="Figure 1: Current Architecture" id="current">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- User visualization intent -->
+        <mxCell id="viz_intent" value="user visualization&#xa;intent (&quot;show feeds&quot;)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F4F8;strokeColor=#333333;strokeWidth=2;fontSize=12;align=center;" vertex="1" parent="1">
+          <mxGeometry x="100" y="50" width="200" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- User behavioral intent -->
+        <mxCell id="behav_intent" value="user behavioral&#xa;intent (&quot;anonymize&quot;)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F4F8;strokeColor=#333333;strokeWidth=2;fontSize=12;align=center;" vertex="1" parent="1">
+          <mxGeometry x="900" y="50" width="200" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- ChRIS UI container -->
+        <mxCell id="ui_container" value="ChRIS UI" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#B3D9E6;strokeColor=#333333;strokeWidth=3;fontSize=14;fontStyle=1;verticalAlign=top;align=center;" vertex="1" parent="1">
+          <mxGeometry x="50" y="170" width="1100" height="330" as="geometry"/>
+        </mxCell>
+
+        <!-- React components layer -->
+        <mxCell id="react_layer" value="React components&#xa;handles &quot;show feeds&quot; intent" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#B3D9E6;strokeColor=#333333;strokeWidth=1;fontSize=11;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="60" y="210" width="1080" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- Intent Translator (emphasized box) -->
+        <mxCell id="intent_translator" value="Intent Translator&#xa;(embedded block)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFCCCC;strokeColor=#333333;strokeWidth=2;fontSize=11;align=center;dashed=1;dashPattern=8 8;" vertex="1" parent="1">
+          <mxGeometry x="750" y="320" width="180" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- JS thin client library -->
+        <mxCell id="js_lib" value="JS thin client library" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#B3D9E6;strokeColor=#333333;strokeWidth=1;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="60" y="440" width="1080" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- CUBE container -->
+        <mxCell id="cube_container" value="CUBE" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#333333;strokeWidth=3;fontSize=14;fontStyle=1;verticalAlign=top;align=center;" vertex="1" parent="1">
+          <mxGeometry x="50" y="560" width="1100" height="280" as="geometry"/>
+        </mxCell>
+
+        <!-- Collection+JSON API -->
+        <mxCell id="cj_api" value="Collection+JSON API" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#333333;strokeWidth=1;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="60" y="600" width="1080" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- CUBE Python/Django internals -->
+        <mxCell id="cube_internals" value="CUBE Python/Django internals" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#333333;strokeWidth=1;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="60" y="710" width="1080" height="120" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrow: viz intent down to React -->
+        <mxCell id="arrow1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#555555;strokeWidth=2;endArrow=classic;endFill=1;" edge="1" parent="1" source="viz_intent" target="react_layer">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrow: behavioral intent down to React -->
+        <mxCell id="arrow2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#555555;strokeWidth=2;endArrow=classic;endFill=1;" edge="1" parent="1" source="behav_intent" target="react_layer">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrow: viz path continues down through to CUBE -->
+        <mxCell id="arrow3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.15;entryY=0;entryDx=0;entryDy=0;strokeColor=#555555;strokeWidth=2;endArrow=classic;endFill=1;" edge="1" parent="1" source="react_layer" target="cj_api">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="200" y="290" as="sourcePoint"/>
+            <mxPoint x="200" y="600" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Arrow: behavioral to Intent Translator -->
+        <mxCell id="arrow4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#555555;strokeWidth=2;endArrow=classic;endFill=1;" edge="1" parent="1" source="behav_intent" target="intent_translator">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Multiple arrows from Intent Translator to CUBE (fan out) -->
+        <mxCell id="arrow5a" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#555555;strokeWidth=1.5;endArrow=classic;endFill=1;dashed=1;" edge="1" parent="1" source="intent_translator" target="cj_api">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="840" y="400" as="sourcePoint"/>
+            <mxPoint x="550" y="600" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="arrow5b" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#555555;strokeWidth=1.5;endArrow=classic;endFill=1;dashed=1;" edge="1" parent="1" source="intent_translator" target="cj_api">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="830" y="400" as="sourcePoint"/>
+            <mxPoint x="570" y="600" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="arrow5c" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#555555;strokeWidth=1.5;endArrow=classic;endFill=1;dashed=1;" edge="1" parent="1" source="intent_translator" target="cj_api">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="850" y="400" as="sourcePoint"/>
+            <mxPoint x="590" y="600" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="arrow5d" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#555555;strokeWidth=1.5;endArrow=classic;endFill=1;dashed=1;" edge="1" parent="1" source="intent_translator" target="cj_api">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="860" y="400" as="sourcePoint"/>
+            <mxPoint x="610" y="600" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

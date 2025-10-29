@@ -1,0 +1,62 @@
+= Completing the ChRIS Architecture: An Intent-Action Service for Bridging Declarative Resources and Procedural Workflows
+:doctype: article
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:source-highlighter: rouge
+:figure-caption: Figure
+:table-caption: Table
+:appendix-caption: Appendix
+:imagesdir: figures
+
+// Author information
+:author: Rudolph Pienaar
+:email: rudolph.pienaar@childrens.harvard.edu
+:affiliation: Boston Children's Hospital
+
+// Document metadata
+:keywords: HATEOAS, REST maturity model, hypermedia APIs, Collection+JSON, intent-driven interfaces, microservices, API design patterns, agentic computing
+
+// Build date
+:revdate: {docdate}
+:revremark: Internal Proposal - Engineering Decision Document
+
+[NOTE]
+====
+**Purpose:** This document presents the Intent-Action Service (IAS) architecture as a path forward that preserves CUBE's Collection+JSON foundation while addressing the client ecosystem challenges we've experienced. It is intended to facilitate internal team discussion and build consensus around a solution that satisfies both the need to maintain our existing investment in Cj and the need to make the platform more accessible.
+====
+
+<<<
+
+include::sections/00_abstract.adoc[]
+
+<<<
+
+include::sections/01_introduction.adoc[]
+
+<<<
+
+include::sections/02_methods.adoc[]
+
+include::sections/02_1_current_architecture.adoc[]
+
+include::sections/02_2_null_case.adoc[]
+
+include::sections/02_3_embedded_cube.adoc[]
+
+include::sections/02_4_external_ias.adoc[]
+
+<<<
+
+include::sections/03_discussion.adoc[]
+
+<<<
+
+include::sections/04_conclusion.adoc[]
+
+<<<
+
+include::../CONSOLIDATED_REFERENCES.adoc[]
+
+// End of document

@@ -1,0 +1,61 @@
+# Build outputs
+build/
+*.pdf
+*.html
+*.docx
+
+# Session notes and presentation strategy
+context/
+
+# Keep final figures but ignore temporary ones
+paper/figures/*_v2.png
+paper/figures/*_temp.png
+paper/figures/*.bak
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv
+pip-log.txt
+.pytest_cache/
+
+# Editor/IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# AsciiDoc temporary files
+.asciidoctor/
+*.tmp
+
+# LaTeX (if used)
+*.aux
+*.log
+*.out
+*.toc
+*.bbl
+*.blg
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Misc
+.env
+*.orig

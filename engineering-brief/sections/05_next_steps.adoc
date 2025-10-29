@@ -1,0 +1,11 @@
+== Incremental Validation Plan
+
+Three-phase strategy with explicit decision points minimizes risk [Ford et al. 2023].
+
+*Phase 1 (Weeks 1-3):* Deploy IAS; implement one intent (`POST /intents/run-freesurfer`); refactor one UI component. *Success criteria:* >30% complexity reduction, <300ms latency. *Decision:* Proceed if met; otherwise abort (minimal sunk cost).
+
+*Phase 2 (Weeks 4-10):* Implement 5-7 intents; integrate Python/CLI clients; migrate 3-5 UI components. *Success criteria:* Reliable execution, new client functionality, >40% cumulative complexity reduction. *Decision:* Proceed if maintainable and ecosystem grows.
+
+*Phase 3 (Weeks 11-18):* Expand to 15-20 intents; complete UI refactoring; publish SDKs; production deployment. *Success metrics:* >80% traffic via IAS, >50% UI complexity reduction, 2+ external clients.
+
+*Resources:* 4-6 person-months over 18 weeks. *Risks:* Latency (abort if >500ms), state management (leverage CUBE), authentication (validate Phase 1), adoption (prioritize developer experience). Incremental approach bounds risk through progressive implementation [Kruchten et al. 2012].

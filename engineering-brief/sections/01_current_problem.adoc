@@ -1,0 +1,14 @@
+== Current Architecture and Its Limitations
+
+The ChRIS ecosystem comprises CUBE (Collection+JSON backend) and ChRIS-UI (React web interface). CUBE models computational workflows as declarative resources using hypermedia links [Amundsen 2011], providing flexibility but creating impedance mismatch with client needs. Users think procedurally ("anonymize this dataset and run FreeSurfer"), not declaratively ("create feed, attach plugin instance, configure parameters").
+
+.Current ChRIS Architecture (Status Quo)
+image::fig01_current_architecture_v2.png[Current Architecture,width=100%]
+
+=== The Orchestration Problem
+
+Every non-trivial operation requires clients to: (1) query hypermedia graph to discover resources; (2) construct multi-step REST sequences; (3) manage asynchronous execution and error recovery; (4) extract results from response payloads. Each client reimplements this logic independently, producing fragmentation, duplication, and inconsistent behavior [Fowler 2010]. The cognitive burden has deterred external development, leaving ChRIS-UI as the sole functional client.
+
+The UI absorbed orchestration by necessity, creating architectural problems: procedural helper functions encode workflow knowledge; state management tracks asynchronous execution; business logic entangles with presentation. This violates layered architecture principles [Parnas 1972]: presentation tiers should consume stable interfaces, not implement backend coordination. The result is code difficult to test (presentation and orchestration cannot be isolated), maintain (workflow changes require UI modifications), and evolve (requires understanding both UI frameworks and CUBE orchestration).
+
+From a system evolution perspective, this architecture has reached a local maximum [Lehman 1980]. The UI cannot evolve into a pure presentation layer without extracting orchestration; external clients cannot viably develop without access to that logic. Python client experiments (2019-2021) never achieved feature parity; CLI tools remain proof-of-concept. The root cause is architectural: pure hypermedia provides declarative expressiveness but lacks procedural interpretation.

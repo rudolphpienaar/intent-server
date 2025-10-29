@@ -1,0 +1,48 @@
+=== 2.2 Null Case (Do Nothing)
+
+The simplest path forward is to do nothing. In this scenario, the current structure of ChRIS remains intact, with the user interface continuing to absorb the full burden of translating user actions into CUBE’s declarative operations. This path is operationally stable and demands no new infrastructure, code refactoring, or service orchestration. It represents the path of least resistance—and, in many practical software projects, the most common outcome.
+
+Under this scenario, modest internal improvements may occur naturally. As UI development continues, the scattered fragments of procedural logic that mediate between user intentions and CUBE could be refactored into a more centralized “intent translator” block. However, such consolidation would remain within the confines of the JavaScript client. Even if internal cohesion improves, the translator would still be inaccessible to external clients, tightly coupled to React’s component lifecycle, and ultimately bound to the limitations of browser-based execution.
+
+From a systems perspective, this represents not stability but *ossification*. The architecture would appear cleaner in the short term but remain functionally equivalent: the procedural knowledge of "how to speak CUBE" would still reside entirely inside the UI. Other clients—CLI tools, automation scripts, or AI agents—would gain no reusable procedural interface. Each would still need to re-implement its own intent mapping if it were to operate independently of the ChRIS UI.
+
+This stagnation pattern mirrors what software-engineering literature describes as *architectural ossification* or *system aging*: a phase where system evolution slows as structural rigidity and technical debt accumulate [19][15]. Over time, the cost of change increases while innovation yield decreases, leading to what MacCormack and Sturtevant term *architectural debt*—a coupling-driven erosion of evolvability that raises maintenance effort and defect rates [18][21][20]. In this state, even improvements such as modularizing the intent logic offer only local relief: the overall system remains trapped by its historical design choices.
+
+The figure below is therefore identical to the previous one, illustrating that while minor internal restructuring might occur, the system’s topology and communication flow are effectively unchanged.
+
+....
+┌─────────────────────────┐              ┌─────────────────────────┐
+│  user visualization     │              │  user behavioral        │
+│  intent ("show feeds")  │              │  intent ("anonymize")   │
+└────────────┬────────────┘              └────────────┬────────────┘
+             │                                        │
+             │                                        │
+             │                                        │
+   ┌─────────┼────────────────────────────────────────┼──────────┐
+   │         │                 ChRIS UI               │          │
+   ├─────────┼────────────────────────────────────────┼──────────┤
+   │         │            React components            │          │
+   │         │        handles "show feeds" intent     │          │
+   ├─────────┼────────────────────────────────────────┼──────────┤
+   │         │                             ╔══════════▼════════╗ │
+   │         │                             ║ Intent Translator ║ │
+   │         │                             ║ (refactored block)║ │
+   │         │                             ╚══╦═══╦═══╦═══╦════╝ │
+   │         │                                │   │   │   │      │
+   │         │                                │   │   │   │      │
+   ├─────────┼────────────────────────────────┼───┼───┼───┼──────┤
+   │         │    JS thin client library      │   │   │   │      │
+   └─────────┼────────────────────────────────┼───┼───┼───┼──────┘
+             │                                │   │   │   │
+             │                                │   │   │   │
+   ┌─────────┼────────────────────────────────┼───┼───┼───┼──────┐
+   │         │                  CUBE          │   │   │   │      │
+   ├─────────┼────────────────────────────────┼───┼───┼───┼──────┤
+   │         ▼         Collection+JSON API    ▼   ▼   ▼   ▼      │
+   ├─────────────────────────────────────────────────────────────┤
+   │       CUBE Python/Django internals                          │
+   └─────────────────────────────────────────────────────────────┘
+....
+
+This option, while superficially attractive for its simplicity, guarantees long-term stagnation. The UI would continue to evolve as both presentation and orchestration layer, deepening its monolithic character and discouraging ecosystem growth. New integrations—such as automated workflows, headless clients, or AI-driven agents—would find no stable procedural interface to target. The system would thus remain functionally viable yet architecturally trapped, postponing the same problem into the future with greater technical debt [17][16][22].
+

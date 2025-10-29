@@ -1,0 +1,49 @@
+== Anticipated Objections and Responses
+
+=== "Why not just drop Collection+JSON entirely and rebuild with a procedural API?"
+
+This represents the opposite extreme: abandoning CUBE's architectural foundation for a complete rewrite. While intellectually appealing, this approach faces insurmountable pragmatic barriers.
+
+First, CUBE embodies years of domain expertise about computational workflows in distributed environments. ChRIS/CUBE serves as a *general-purpose distributed compute platform* (not domain-specific to medical imaging but applicable to physical oceanography, climate research, genomics, or any field requiring containerized workflow orchestration across federated infrastructure). Collection+JSON's hypermedia semantics provide precisely the abstraction needed for this generality: workflows are modeled as resources and relationships, not hardcoded procedures. Discarding this foundation means re-encoding this domain knowledge from scratch.
+
+Second, incremental adoption becomes impossible. A complete API replacement forces a flag day: all clients, all integrations, all institutional dependencies break simultaneously. ChRIS is a production system with active users and institutional commitments. The IAS approach allows gradual transition: new intents appear alongside existing Cj access; clients migrate at their own pace; risk is bounded to individual increments. Complete replacement offers no such path.
+
+Third, the philosophical rationale for Collection+JSON remains sound. Hypermedia APIs provide evolutionary resilience: clients navigate links rather than hardcode endpoints, enabling backend changes without breaking clients [Fielding 2000]. This property matters for a general-purpose platform expected to evolve over decades. The problem is not Cj itself but the *absence* of complementary procedural interpretation. The IAS completes the architecture rather than replacing it.
+
+=== "This adds unnecessary operational complexity."
+
+The orchestration functionality that the IAS provides already exists; it is currently embedded within the ChRIS UI as helper functions, callback chains, and state management logic. The IAS does not create complexity; it relocates and structures it. Total system complexity remains approximately constant, but transitions from *entangled* (orchestration interwoven with presentation) to *managed* (orchestration in a dedicated, testable service).
+
+Brooks [1987] distinguishes essential from accidental complexity. Orchestration is essential: clients require it to translate intentions into CUBE operations. Where that orchestration resides determines whether complexity is manageable or hidden. The current architecture hides orchestration within UI components, making it difficult to test, reuse, or modify independently. The IAS makes orchestration explicit and observable.
+
+The status quo appears operationally simple (two services: UI and CUBE) but has produced development stagnation: Python and CLI clients have not advanced in years. Adding the IAS increases short-term operational overhead but removes structural impediments to long-term evolution. This trade-off (immediate cost for sustained capacity) characterizes investments in architectural health [Kruchten et al. 2012].
+
+=== "Why not just refactor the UI to better organize orchestration?"
+
+Refactoring within the UI addresses only one symptom. It does nothing for Python clients, CLI tools, or automation scripts; each would still need to implement orchestration independently. The client ecosystem fragmentation that has stalled development would persist.
+
+More fundamentally, refactoring perpetuates a category error: orchestration belongs in backend infrastructure, not presentation tiers. The ChRIS UI is a React application designed for browser-based user interaction. Workflow orchestration (stateful coordination, retry logic, error handling, long-running task management) requires backend infrastructure [Parnas 1972]. UI-based orchestration cannot outlive browser sessions, complicates observability (requires instrumenting JavaScript execution), and prevents orchestration reuse across clients.
+
+Backend orchestration via the IAS enables long-running workflows (independent of client sessions), centralized monitoring (request tracing, latency metrics), and shared implementation across all clients. Given ChRIS's role as a general-purpose compute platform serving diverse scientific domains, enabling robust client ecosystems is essential (not just for medical imaging but for any field requiring computational workflow management).
+
+=== "What if the IAS approach fails? We will have wasted resources."
+
+The incremental validation strategy mitigates this risk. We do not propose building the full IAS architecture before evaluation. Phase 1 (2-3 weeks) implements a single intent endpoint, refactors one UI component to consume it, and measures code complexity reduction and performance impact. This proof-of-concept validates technical feasibility with minimal investment.
+
+After Phase 1, we evaluate against explicit criteria: if client code complexity decreases by >30%, latency overhead remains <300ms, and developer feedback is positive, we proceed to Phase 2. If metrics fall short or unexpected problems emerge, we pivot or abort with minimal sunk cost (2-3 weeks of effort). This embodies incremental validation rather than big-bang commitment [Ford et al. 2023]. Each phase produces working software and measurable outcomes. Risk is bounded to individual increments rather than the entire architecture.
+
+=== "Won't maintaining two APIs (Collection+JSON and IAS) be burdensome?"
+
+The APIs serve complementary purposes with limited overlap. CUBE's Collection+JSON API provides fine-grained resource access: querying entities, exploring relationships, managing low-level state. This supports advanced users who require precise control and external systems needing general-purpose access. The IAS provides coarse-grained workflow operations: executing common procedures, orchestrating multi-step processes. Most client interactions use one or the other based on use case, not both simultaneously.
+
+More importantly, the maintenance burden argument reverses causality. The orchestration logic that the IAS encapsulates *already exists* (currently scattered throughout the UI and reimplemented partially in Python/CLI clients). Centralizing this logic in the IAS reduces total maintenance burden by eliminating duplication. Rather than maintaining orchestration in N clients (each with subtle behavioral differences), we maintain one canonical implementation shared across all clients.
+
+Dual-API patterns are common in mature systems. Databases expose both SQL (declarative queries) and stored procedures (procedural logic). Cloud platforms provide both REST APIs (resource management) and higher-level SDKs (workflow orchestration). In each case, complementary interfaces serve different needs without imposing unacceptable maintenance costs. Version coordination between CUBE and IAS is manageable through stable interface contracts [Newman 2021].
+
+=== "ChRIS works today. This seems like over-engineering for problems that aren't critical."
+
+The problems are neither theoretical nor distant; they are documented and present with concrete evidence. The Python client library [python-chrisclient] experienced extended stagnation from 2022-2024 despite initial development momentum in 2021. The Rust client [chrs] stagnated after September 2024 despite 27 releases and 420 commits, never achieving feature parity with the UI, illustrating that even dedicated development efforts struggle against orchestration complexity. CLI experiments like ChILI [ChILI], which showed promise as an interactive Node.js interface, have been inactive since February 2025. Utility tools like pipeline2cube [pipeline2cube], designed to register workflows and plugins, have seen no commits since January 2023. This pattern demonstrates that orchestration complexity creates a barrier preventing client ecosystem growth. External contributors report steep learning curves requiring understanding of both Collection+JSON semantics and CUBE-specific orchestration patterns. UI maintenance difficulties compound as workflow logic remains entangled with presentation, increasing onboarding time and making refactoring risky. This represents accumulating technical debt [Kruchten et al. 2012].
+
+"Works today" conflates functional adequacy with architectural sustainability. The system executes workflows, but its architecture increasingly constrains evolution. Lehman's Laws [1980] observe that systems failing to actively reduce complexity experience declining adaptability (exactly the trajectory ChRIS is on). For a general-purpose distributed compute platform expected to serve diverse scientific domains over decades, architectural sustainability is not optional.
+
+Addressing architectural problems incrementally while the system remains functional and the team has capacity for thoughtful implementation is responsible stewardship. Waiting until the architecture prevents forward progress entirely creates a forced, high-risk refactoring under pressure. The IAS proposal addresses known problems with explicit validation criteria and abort criteria at each phase.

@@ -170,18 +170,21 @@ See **THREE_VERSIONS_GUIDE.md** for detailed selection criteria.
 - Future work section (validation methodology outlined but needs detail)
 
 **Next Steps for Publication:**
-- Implement Phase 1 proof-of-concept (1 intent, ~2-3 weeks)
-- Collect initial metrics (complexity reduction, latency)
+- **PREREQUISITE**: Implement IAS and collect telemetry data first
+- Phase 1 implementation (1-3 intents, ~4-6 weeks)
+- Phase 2 implementation (5-7 intents, ~8-10 weeks)
+- Collect empirical metrics (complexity reduction, latency, developer experience)
 - Expand related work into standalone section
 - Add formal threats to validity analysis
-- Consider splitting into two papers:
-  1. Position paper (current state) - suitable for IEEE Software, workshops
-  2. Full evaluation paper (after implementation) - suitable for ACM TOSEM, JSS
+- Write up empirical results and case study
 
 **Target Timeline:**
-- Q1 2025: Submit position paper to IEEE Software or workshop
-- Q2-Q3 2025: Implement and evaluate Phase 1-2
-- Q4 2025: Submit full evaluation paper with empirical results
+- Q4 2025 (Nov-Dec): Implement Phase 1 IAS proof-of-concept
+- Q1 2026 (Jan-Mar): Complete Phase 2, collect preliminary telemetry data
+- Q2 2026 (Apr-Jun): Write empirical results, submit to IEEE Software or JSS
+- Alternative: Submit position paper (current architectural analysis) earlier while implementation proceeds
+
+**Note**: Academic paper submission requires empirical validation data from actual IAS implementation. Current papers are architectural proposals suitable for internal review and team consensus building.
 
 See **THREE_VERSIONS_GUIDE.md** for version-specific details.
 

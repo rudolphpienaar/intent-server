@@ -12,21 +12,43 @@ This paper examines a fundamental architectural challenge in the ChRIS medical i
 
 ```
 intent-server/
-├── paper/                      # Main paper content
-│   ├── main.adoc              # Master document
-│   ├── sections/              # Individual sections
-│   └── figures/               # Publication-ready figures
+├── paper-research/            # Academic publication version
+│   ├── main.adoc             # Master document (research framing)
+│   ├── sections/             # Sections with RQ1-RQ5, validation criteria
+│   └── figures/              # Publication-ready figures
+├── paper-engineering/         # Engineering decision document
+│   ├── main.adoc             # Master document (advocacy framing)
+│   ├── sections/             # Sections with implementation roadmap
+│   └── figures/              # Publication-ready figures
+├── engineering-brief/         # 10-page concise proposal
+│   ├── main.adoc             # Master document (executive summary)
+│   ├── sections/             # Compressed alternatives, focused on IAS
+│   ├── compact-theme.yml     # PDF theme for tight layout
+│   └── figures/              # Publication-ready figures
 ├── figures-source/            # Editable figure sources
 │   ├── drawio/               # Draw.io XML files
 │   ├── graphviz/             # Graphviz DOT files
 │   └── scripts/              # Figure generation scripts
 ├── scripts/                   # Build utilities
-│   ├── build.sh              # Build PDF/HTML/DOCX
-│   └── word-count.sh         # Check word count
+│   ├── build.sh              # Build all three versions
+│   └── word-count.sh         # Check word count for all versions
 ├── docs/                      # Additional documentation
 ├── drafts/                    # Archived earlier versions
-└── related-work/             # Related projects
+├── paper-archive/             # Original combined version (reference)
+├── THREE_VERSIONS_GUIDE.md    # Detailed comparison of three versions
+├── ENGINEERING_BRIEF.md       # Engineering brief documentation
+└── CONSOLIDATED_REFERENCES.adoc  # Shared references (40+ citations)
 ```
+
+## Three Paper Versions
+
+This repository contains **three versions** of the Intent-Action Service proposal, each for different audiences:
+
+1. **Research Paper** (`paper-research/`) - Academic journal submission with research questions (RQ1-RQ5), validation criteria, and epistemic humility
+2. **Engineering Paper** (`paper-engineering/`) - Comprehensive internal documentation with implementation roadmap and advocacy framing
+3. **Engineering Brief** (`engineering-brief/`) - 10-page concise proposal for busy developers with preemptive objections addressed
+
+See **THREE_VERSIONS_GUIDE.md** for detailed comparison and usage recommendations.
 
 ## Building the Paper
 
@@ -57,30 +79,38 @@ intent-server/
 
 ### Build Commands
 
-**Build all formats:**
+**Build all three versions (recommended):**
 ```bash
 ./scripts/build.sh
 ```
 
-**Build specific formats:**
+This generates:
+- `build/paper_research.{html,pdf,docx}` - Academic version
+- `build/paper_engineering.{html,pdf,docx}` - Engineering version
+- `build/engineering_brief.{html,pdf,docx}` - Brief version (10 pages)
+
+**Build individual versions:**
 ```bash
-# HTML only
-asciidoctor -o build/paper.html paper/main.adoc
+# Research paper only
+asciidoctor -o build/paper_research.html paper-research/main.adoc
+asciidoctor-pdf -o build/paper_research.pdf paper-research/main.adoc
 
-# PDF only
-asciidoctor-pdf -o build/paper.pdf paper/main.adoc
+# Engineering paper only
+asciidoctor -o build/paper_engineering.html paper-engineering/main.adoc
+asciidoctor-pdf -o build/paper_engineering.pdf paper-engineering/main.adoc
 
-# DOCX (requires HTML first)
-asciidoctor -o build/paper.html paper/main.adoc
-pandoc -f html -t docx -o build/paper.docx build/paper.html
+# Engineering brief only
+asciidoctor -a pdf-theme=engineering-brief/compact-theme.yml \
+  -o build/engineering_brief.pdf engineering-brief/main.adoc
 ```
 
 **Check word count:**
 ```bash
-./scripts/word-count.sh
+./scripts/word-count.sh              # All versions
+./scripts/word-count.sh research     # Research only
+./scripts/word-count.sh engineering  # Engineering only
+./scripts/word-count.sh brief        # Brief only
 ```
-
-**Generated outputs:** `build/paper.{html,pdf,docx}`
 
 ## Editing Figures
 
@@ -88,8 +118,11 @@ The diagrams are created in [draw.io](https://app.diagrams.net/):
 
 1. Open `figures-source/drawio/figXX_*.drawio` in draw.io
 2. Edit as needed
-3. Export as PNG (300+ DPI) to `paper/figures/`
-4. Commit both source (.drawio) and output (.png)
+3. Export as PNG (300+ DPI) to all three figure directories:
+   - `paper-research/figures/`
+   - `paper-engineering/figures/`
+   - `engineering-brief/figures/`
+4. Commit both source (.drawio) and output (.png) files
 
 ## Key Contributions
 
@@ -99,15 +132,19 @@ The diagrams are created in [draw.io](https://app.diagrams.net/):
 4. **Agentic Computing**: Positioning for LLM-driven interaction through intent-level APIs
 5. **Broader Applicability**: General pattern applicable beyond ChRIS to scientific computing platforms
 
-## Target Journals
+## Usage Guide
 
-Potential publication venues (in order of fit):
+**For academic journal submission:**
+- Use `paper-research/` version
+- Research questions (RQ1-RQ5) and validation framework
+- Target journals: IEEE Software, Journal of Biomedical Informatics, Software: Practice and Experience
 
-1. **IEEE Software** (6,000-8,000 words)
-2. **Journal of Biomedical Informatics** (~10,000 words)
-3. **Software: Practice and Experience** (8,000-10,000 words)
-4. **ACM TOSEM** (requires empirical validation)
-5. **PeerJ Computer Science** (open access, flexible length)
+**For team presentations and internal reviews:**
+- Use `engineering-brief/` version for initial meetings (10 pages)
+- Use `paper-engineering/` version for comprehensive technical review (50+ pages)
+- Implementation roadmap with 3 phases
+
+See **THREE_VERSIONS_GUIDE.md** for detailed selection criteria.
 
 ## Citation
 

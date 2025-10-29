@@ -146,17 +146,57 @@ The diagrams are created in [draw.io](https://app.diagrams.net/):
 
 See **THREE_VERSIONS_GUIDE.md** for detailed selection criteria.
 
+## Academic Paper Status and Roadmap
+
+**Current Status (Research Paper):**
+
+**Complete:**
+- Core architectural analysis (three alternatives: status quo, embedded, external IAS)
+- Problem characterization (intent-orchestration impedance mismatch)
+- Research questions defined (RQ1-RQ5)
+- Introduction with historical context (Collection+JSON, HATEOAS decline)
+- Discussion section with comparative evaluation
+- Comprehensive references (40+ citations)
+
+**Still Needed:**
+- Empirical validation data (currently proposal only, no implementation results)
+- Developer experience metrics (time-to-implementation, API usability surveys)
+- Performance benchmarks (latency, throughput overhead measurements)
+- Client complexity metrics (LOC reduction, cognitive complexity comparison)
+- Longitudinal study data (independent evolution claims untested)
+- Case study from actual implementation in ChRIS
+- Threats to validity section (partially addressed but needs expansion)
+- Related work section (currently embedded in introduction, needs standalone section)
+- Future work section (validation methodology outlined but needs detail)
+
+**Next Steps for Publication:**
+- Implement Phase 1 proof-of-concept (1 intent, ~2-3 weeks)
+- Collect initial metrics (complexity reduction, latency)
+- Expand related work into standalone section
+- Add formal threats to validity analysis
+- Consider splitting into two papers:
+  1. Position paper (current state) - suitable for IEEE Software, workshops
+  2. Full evaluation paper (after implementation) - suitable for ACM TOSEM, JSS
+
+**Target Timeline:**
+- Q1 2025: Submit position paper to IEEE Software or workshop
+- Q2-Q3 2025: Implement and evaluate Phase 1-2
+- Q4 2025: Submit full evaluation paper with empirical results
+
+See **THREE_VERSIONS_GUIDE.md** for version-specific details.
+
 ## Citation
 
 If you reference this work, please cite:
 
 ```bibtex
-@article{intent-action-service-2025,
+@article{pienaar2025intent,
   title={Completing the ChRIS Architecture: An Intent-Action Service for Bridging Declarative Resources and Procedural Workflows},
-  author={[Author Names]},
-  journal={[Journal Name]},
+  author={Pienaar, Rudolph},
+  journal={Preprint},
   year={2025},
-  note={Preprint available at [URL]}
+  institution={Boston Children's Hospital},
+  url={https://github.com/rudolphpienaar/intent-server}
 }
 ```
 
@@ -179,15 +219,13 @@ Under the following terms:
 
 ## Authors
 
-[Author information to be added]
-
-## Acknowledgments
-
-[Acknowledgments to be added]
+**Rudolph Pienaar**
+Boston Children's Hospital
+rudolph.pienaar@childrens.harvard.edu
 
 ## Contact
 
-For questions or collaboration inquiries, please contact [author contact info].
+For questions or collaboration inquiries, please contact rudolph.pienaar@childrens.harvard.edu
 
 ---
 

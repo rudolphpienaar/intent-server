@@ -1,0 +1,32 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite it as below."
+title: "Completing the ChRIS Architecture: An Intent-Action Service for Bridging Declarative Resources and Procedural Workflows"
+authors:
+  - family-names: Pienaar
+    given-names: Rudolph
+    email: rudolph.pienaar@childrens.harvard.edu
+    affiliation: Boston Children's Hospital
+type: article
+repository-code: "https://github.com/rudolphpienaar/intent-server"
+url: "https://github.com/rudolphpienaar/intent-server"
+abstract: >
+  This paper examines a fundamental architectural challenge in the ChRIS medical
+  imaging platform: the impedance mismatch between CUBE's declarative Collection+JSON
+  resource model and the procedural workflows that clients require. We analyze three
+  architectural approaches—maintaining the status quo, embedding intent logic within
+  CUBE, and deploying an external Intent-Action Service (IAS)—and argue that the
+  external IAS represents the optimal balance between architectural purity, evolutionary
+  sustainability, and readiness for agentic computing paradigms.
+keywords:
+  - REST architecture
+  - HATEOAS
+  - hypermedia APIs
+  - intent-action patterns
+  - distributed systems
+  - medical imaging
+  - ChRIS platform
+  - software architecture
+  - API design
+license: CC-BY-4.0
+date-released: 2025-10-29
+version: 1.0.0

@@ -12,41 +12,41 @@ This paper examines a fundamental architectural challenge in the ChRIS medical i
 
 ```
 intent-server/
-├── paper-research/            # Academic publication version
-│   ├── main.adoc             # Master document (research framing)
-│   ├── sections/             # Sections with RQ1-RQ5, validation criteria
-│   └── figures/              # Publication-ready figures
-├── paper-engineering/         # Engineering decision document
-│   ├── main.adoc             # Master document (advocacy framing)
-│   ├── sections/             # Sections with implementation roadmap
-│   └── figures/              # Publication-ready figures
-├── engineering-brief/         # 10-page concise proposal
-│   ├── main.adoc             # Master document (executive summary)
-│   ├── sections/             # Compressed alternatives, focused on IAS
-│   ├── compact-theme.yml     # PDF theme for tight layout
-│   └── figures/              # Publication-ready figures
-├── figures-source/            # Editable figure sources
-│   ├── drawio/               # Draw.io XML files
-│   ├── graphviz/             # Graphviz DOT files
-│   └── scripts/              # Figure generation scripts
-├── scripts/                   # Build utilities
-│   ├── build.sh              # Build all three versions
-│   └── word-count.sh         # Check word count for all versions
-├── docs/                      # Additional documentation
-├── drafts/                    # Archived earlier versions
-├── paper-archive/             # Original combined version (reference)
-├── THREE_VERSIONS_GUIDE.md    # Detailed comparison of three versions
-├── ENGINEERING_BRIEF.md       # Engineering brief documentation
-└── CONSOLIDATED_REFERENCES.adoc  # Shared references (40+ citations)
+├── paper-research/                 # Academic publication version
+│   ├── main.adoc                   # Master document (research framing)
+│   ├── sections/                   # Sections with RQ1-RQ5, validation criteria
+│   └── figures/                    # Publication-ready figures
+├── paper-engineering/              # Engineering decision document
+│   ├── main.adoc                   # Master document (advocacy framing)
+│   ├── sections/                   # Sections with implementation roadmap
+│   └── figures/                    # Publication-ready figures
+├── engineering-brief/              # 10-page concise proposal
+│   ├── main.adoc                   # Master document (executive summary)
+│   ├── sections/                   # Compressed alternatives, focused on IAS
+│   ├── compact-theme.yml           # PDF theme for tight layout
+│   └── figures/                    # Publication-ready figures
+├── figures-source/                 # Editable figure sources
+│   ├── drawio/                     # Draw.io XML files
+│   ├── graphviz/                   # Graphviz DOT files
+│   └── scripts/                    # Figure generation scripts
+├── scripts/                        # Build utilities
+│   ├── build.sh                    # Build all three versions
+│   └── word-count.sh               # Check word count for all versions
+├── docs/                           # Additional documentation
+├── drafts/                         # Archived earlier versions
+├── paper-archive/                  # Original combined version (reference)
+├── THREE_VERSIONS_GUIDE.md         # Detailed comparison of three versions
+├── ENGINEERING_BRIEF.md            # Engineering brief documentation
+└── CONSOLIDATED_REFERENCES.adoc    # Shared references (40+ citations)
 ```
 
 ## Three Paper Versions
 
 This repository contains **three versions** of the Intent-Action Service proposal, each for different audiences:
 
-1. **Research Paper** (`paper-research/`) - Academic journal submission with research questions (RQ1-RQ5), validation criteria, and epistemic humility
-2. **Engineering Paper** (`paper-engineering/`) - Comprehensive internal documentation with implementation roadmap and advocacy framing
-3. **Engineering Brief** (`engineering-brief/`) - 10-page concise proposal for busy developers with preemptive objections addressed
+1. **Research Paper** (`paper-research/`) - Academic journal submission with research questions (RQ1-RQ5), validation criteria, etc
+2. **Engineering Paper** (`paper-engineering/`) - Comprehensive internal documentation with implementation roadmap, security detail, etc
+3. **Engineering Brief** (`engineering-brief/`) - 10-ish-page concise proposal for internal team consumption
 
 See **THREE_VERSIONS_GUIDE.md** for detailed comparison and usage recommendations.
 

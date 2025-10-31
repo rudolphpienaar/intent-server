@@ -1,11 +1,30 @@
 == Incremental Validation Plan
 
-Three-phase strategy with explicit decision points minimizes risk [Ford et al. 2023].
+Three-phase strategy with explicit decision points minimizes risk [9].
 
-*Phase 1 (Weeks 1-3):* Deploy IAS; implement one intent (`POST /intents/run-freesurfer`); refactor one UI component. *Success criteria:* >30% complexity reduction, <300ms latency. *Decision:* Proceed if met; otherwise abort (minimal sunk cost).
+*Phase 1 (Weeks 1-3):* Deploy IAS; implement 2 core SeaGaP intents (action-first API: `POST /intents/download` and `POST /intents/pipeline`); refactor one UI component (e.g., download wizard or pipeline execution modal). *Success criteria:* >30% complexity reduction, <300ms latency, successful SeaGaP pattern validation, pipeline parameters correctly passed through. *Decision:* Proceed if met; otherwise abort (minimal sunk cost).
 
-*Phase 2 (Weeks 4-10):* Implement 5-7 intents; integrate Python/CLI clients; migrate 3-5 UI components. *Success criteria:* Reliable execution, new client functionality, >40% cumulative complexity reduction. *Decision:* Proceed if maintainable and ecosystem grows.
+*Phase 2 (Weeks 4-10):* Expand intent coverage and ecosystem integration:
 
-*Phase 3 (Weeks 11-18):* Expand to 15-20 intents; complete UI refactoring; publish SDKs; production deployment. *Success metrics:* >80% traffic via IAS, >50% UI complexity reduction, 2+ external clients.
+* *Intent enhancement:* Extend `download` and `pipeline` intents with additional capabilities: batch operations (multi-patient downloads), advanced gather strategies (date ranges, composite filters), pipeline composition (chained pipeline execution), custom packaging formats (tar, individual files vs zip)
+* *Additional pipeline support:* Ensure `pipeline` intent works with all registered ChRIS pipelines; validate pipeline-specific parameter passing for 5-7 common pipelines (FreeSurfer, fetal-brain, covidnet, etc.); implement pipeline parameter validation and helpful error messages
+* *Client integration:* Develop Python SDK with intent abstractions; integrate with `python-chrisclient` and `chrs` CLI; create example Jupyter notebooks demonstrating workflow composition
+* *UI migration:* Refactor 3-5 UI components to use intent APIs: download wizard, batch upload processor, pipeline execution modal, patient data browser
+* *Error handling validation:* Implement comprehensive error scenarios per Section 3; validate recovery mechanisms; measure time-to-diagnosis for common failures
+* *Observability:* Deploy Prometheus metrics, Grafana dashboards, distributed tracing (OpenTelemetry); establish SLO baselines (<300ms p95 latency, >99% success rate for valid requests)
 
-*Resources:* 4-6 person-months over 18 weeks. *Risks:* Latency (abort if >500ms), state management (leverage CUBE), authentication (validate Phase 1), adoption (prioritize developer experience). Incremental approach bounds risk through progressive implementation [Kruchten et al. 2012].
+*Success criteria:* Both core intents execute reliably across 100+ test workflows covering multiple pipelines; at least one non-UI client uses intent APIs in production; cumulative >40% complexity reduction in client code; error messages enable self-service resolution >80% of cases; operational metrics meet SLO targets.
+
+*Decision point:* Proceed to Phase 3 if intent API demonstrates ecosystem growth (2+ client types using intents), maintainability (no architectural bottlenecks), and developer satisfaction (positive feedback from Python/CLI integration). Abort or pivot if operational complexity exceeds client simplification benefits or if intent abstraction proves too rigid for evolving workflows.
+
+*Phase 3 (Weeks 11-18):* Production hardening and data-first API:
+
+* *Data-first API implementation:* Deploy resource-oriented endpoints (`/intent/data/CUBE/{idType}/{idValue}/actions/{download|pipeline}`) alongside action-first; implement OPTIONS-based action discovery returning available actions for specific data; create migration guide for batch processing use cases
+* *Advanced workflow support:* Add support for workflow composition (execute multiple intents in sequence), conditional logic (gather strategies based on data availability), and webhook notifications (alert on pipeline completion/failure)
+* *Complete UI refactoring:* Migrate all orchestration logic from UI components to intent APIs; UI becomes pure presentation layer consuming intent endpoints; validate >50% reduction in UI codebase complexity
+* *SDK maturation:* Publish stable SDKs for Python, JavaScript, Go; comprehensive API documentation with OpenAPI spec; example repositories demonstrating common patterns (batch downloads, automated pipeline execution, data exploration)
+* *Production deployment:* Blue-green deployment strategy; canary rollout with gradual traffic migration (10%→50%→100%); comprehensive backup/rollback procedures; production monitoring and alerting
+
+*Success metrics:* >80% of orchestration traffic routes through IAS; >50% reduction in UI complexity (measured by cyclomatic complexity, LOC); 2+ external clients (non-ChRIS-UI) in production use; data-first API adoption by batch processing scripts; zero-downtime deployments; operational excellence (99.9% uptime, <500ms p99 latency).
+
+*Resources:* 4-6 person-months over 18 weeks. *Risks:* Latency (abort if >500ms), state management (leverage CUBE), authentication (validate Phase 1), adoption (prioritize developer experience). Incremental approach bounds risk through progressive implementation [12].

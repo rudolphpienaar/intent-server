@@ -1,0 +1,53 @@
+== Related Work
+
+The challenge we address—balancing declarative hypermedia semantics with procedural workflow requirements—intersects several bodies of literature. While no prior work directly addresses intent-action services for Collection+JSON APIs, the broader problem of orchestrating distributed operations over resource-oriented interfaces has received attention across microservices architecture, REST API design patterns, and empirical software engineering.
+
+=== HATEOAS Adoption and Limitations
+
+The theoretical foundations of hypermedia-driven REST (HATEOAS) are well established [10], but empirical studies consistently document low adoption rates and practical limitations. Rodríguez et al. [39] analyzed 500 REST web service APIs from Alexa's top 4000 sites, finding that only 0.8% strictly complied with all REST principles including HATEOAS. Neumann et al. [40] extended this analysis across public REST web services, discovering that merely 4.2% of APIs implemented HATEOAS despite its centrality to REST's architectural vision. These findings align with our observation that ChRIS/CUBE, while maintaining HATEOAS compliance, experiences client ecosystem stagnation.
+
+More recent qualitative research provides insight into developer perspectives. Coblenz et al. [41] conducted a study with 105 practitioners from industry and academia, finding that only 27% were familiar with the Richardson Maturity Model, and among those, 79% considered Level 2 (HTTP methods without hypermedia) sufficient for "RESTfulness." Bogner et al. [6] examined the relationship between RESTful API design rules and understandability, reporting insufficient empirical evidence for the effectiveness of many prescribed guidelines including hypermedia constraints. These studies suggest that HATEOAS adoption failure may reflect not merely tooling gaps but fundamental impedance mismatches between hypermedia principles and practical development workflows.
+
+The literature consistently identifies a tension between REST's architectural purity and operational pragmatism, yet offers limited architectural responses beyond abandoning hypermedia constraints entirely. Our proposal differs in preserving HATEOAS for resource description while adding procedural intent abstractions—a complementary rather than replacement strategy.
+
+=== Orchestration Patterns in Distributed Systems
+
+The microservices literature extensively addresses orchestration challenges, though typically without explicit focus on hypermedia APIs. Newman [23] formalizes the Backend-for-Frontend (BFF) pattern, describing systems where "one backend per user experience" performs aggregation, filtering, and transformation of data from multiple services. The BFF pattern emerged from practical necessity at SoundCloud around 2011, addressing client complexity when consuming fine-grained microservice APIs. This mirrors our observation that ChRIS clients struggle with multi-step Collection+JSON workflows.
+
+Richardson [44] documents the API Composition pattern, where an "API Composer" invokes services that own data and performs in-memory joins of results. This pattern explicitly addresses queries requiring data from multiple services in database-per-service architectures. While Richardson's pattern focuses on data composition, our Intent-Action Service extends this to workflow orchestration—not merely joining data but managing stateful sequences (Search-Gather-Pipeline) with error handling and partial progress preservation.
+
+Megargel et al. [42] provide a decision framework comparing orchestration (centralized control) and choreography (distributed coordination) in microservices. They note that "orchestrators tend to be associated with real-time, synchronous interfaces such as REST," creating coupling between orchestrator and services. Our external IAS architecture accepts this coupling trade-off explicitly, arguing that shared orchestration logic eliminates duplicated complexity across clients—an engineering decision rather than architectural flaw.
+
+These patterns validate our architectural intuition: when resource-oriented APIs (whether microservices or hypermedia) cannot efficiently express client workflow requirements, an intermediate orchestration layer provides pragmatic relief. What remains unaddressed in existing literature is how to architect this layer specifically for hypermedia-driven systems while preserving their declarative benefits.
+
+=== Hypermedia and Workflow Systems
+
+Balis [43] proposes "Hypermedia Workflow," applying REST principles to scientific workflow systems. This work is conceptually closest to ours, recognizing that traditional workflow engines impose centralized control that conflicts with Web architecture principles. Balis advocates making workflows themselves hypermedia resources, where workflow execution follows HATEOAS principles through state transitions.
+
+However, Balis's approach inverts our solution: rather than adding procedural abstractions atop declarative hypermedia (our external IAS), it attempts to make workflows natively hypermedia-driven. Our experience suggests this inversion faces practical limits—clients require task-oriented APIs for common workflows even when the underlying resource model remains hypermedia-compliant. The distinction reflects differing assumptions: Balis assumes clients can navigate workflow state via hypermedia links; we observe that clients prefer intent endpoints that encapsulate navigation logic.
+
+The broader workflow literature (BPEL, BPMN, scientific workflows) addresses orchestration extensively but assumes workflow engines as first-class architectural components rather than complementary layers atop existing resource APIs. Our contribution lies in positioning the Intent-Action Service as an *optional* orchestration complement to declarative systems, enabling progressive adoption without discarding foundational hypermedia investments.
+
+=== REST Maturity and Practical Adoption
+
+Fowler [45] popularized the Richardson Maturity Model, which positions HATEOAS (Level 3) as the pinnacle of RESTful design. Yet empirical evidence suggests industry practice clusters at Level 2, where HTTP methods provide uniform interfaces without hypermedia navigation. This divergence between ideal and actual practice motivated our architectural inquiry: if HATEOAS compliance correlates with client ecosystem challenges (as in ChRIS), what architectural completions enable HATEOAS benefits while accommodating procedural workflow needs?
+
+The "pragmatic REST" movement [various industry sources] advocates Level 2 compliance as sufficient, implicitly accepting that task-oriented operations require client-side orchestration or non-RESTful extensions (GraphQL, RPC-style endpoints). Our proposal offers a middle path: maintain Level 3 compliance in the declarative layer (CUBE) while adding task-oriented abstractions in a separate service (IAS) that composes CUBE operations. This preserves architectural purity in the resource model while pragmatically addressing operational requirements.
+
+=== Positioning Our Work
+
+The Intent-Action Service synthesizes insights from these disparate literatures—BFF/orchestration patterns from microservices, empirical evidence of HATEOAS adoption challenges, hypermedia workflow research—and applies them to a specific problem: Collection+JSON APIs in medical imaging platforms. Our contribution includes:
+
+1. **Empirical grounding:** Documenting a real-world HATEOAS-compliant system (ChRIS/CUBE) experiencing client ecosystem stagnation despite architectural elegance.
+
+2. **Architectural taxonomy:** Systematically evaluating three response strategies (status quo, embedded orchestration, external IAS) with explicit trade-offs.
+
+3. **Pattern adaptation:** Extending BFF/API Composition patterns specifically for hypermedia APIs, with the SeaGaP (Search-Gather-Pipeline) model capturing domain workflows.
+
+4. **Dual-interface design:** Proposing both action-first (task-oriented) and data-first (resource-oriented) URL structures, enabling progressive adoption.
+
+5. **Validation framework:** Defining research questions (RQ1-RQ5) and success criteria for empirical evaluation, acknowledging that architectural analysis requires implementation confirmation.
+
+While the BFF pattern, API Composition, and workflow orchestration are established concepts, their application to hypermedia-driven systems remains underexplored. The literature provides neither clear guidance on when orchestration complements (rather than contradicts) hypermedia principles, nor validated architectural patterns for this complementarity. Our work addresses this gap, proposing that declarative and procedural interfaces are complementary design concerns deserving distinct architectural homes rather than competing philosophies requiring a single victor.
+
+The critical open question—whether this architectural completion actually reduces client complexity, enables ecosystem growth, and allows independent evolution—remains empirical. The evidence from HATEOAS adoption failures [39][40], BFF pattern emergence [23], and orchestration necessity [42] suggests the problem is real and widespread. Whether our specific solution proves effective requires the validation studies we propose in our research agenda (Section 4).

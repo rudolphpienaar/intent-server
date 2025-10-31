@@ -1,0 +1,110 @@
+digraph SeaGaP {
+    // Graph configuration
+    rankdir=TB;
+    bgcolor="white";
+    node [fontname="Arial", fontsize=11, style=filled];
+    edge [fontname="Arial", fontsize=10];
+
+    // Define nodes
+    user [label="User Intent\n\"Anonymize MPRAGE\nof Patient 12344\"",
+          shape=box, style="filled,rounded", fillcolor="#E8F4F8",
+          color="#2E86AB", penwidth=2];
+
+    // Phase 1: Search
+    subgraph cluster_search {
+        label="Phase 1: SEARCH";
+        fontsize=12;
+        fontname="Arial Bold";
+        style=filled;
+        fillcolor="#FFF3E0";
+        color="#FF6F00";
+        penwidth=2;
+
+        search_pacs [label="Query PACS\nAccessionNumber=12344",
+                     shape=box, fillcolor="#FFE0B2"];
+        search_cube [label="Search CUBE\nFilesystem",
+                     shape=box, fillcolor="#FFE0B2"];
+        search_results [label="Raw Results\n(All scans for\nPatient 12344)",
+                        shape=box, style="filled,rounded",
+                        fillcolor="#FFD54F"];
+    }
+
+    // Phase 2: Gather
+    subgraph cluster_gather {
+        label="Phase 2: GATHER";
+        fontsize=12;
+        fontname="Arial Bold";
+        style=filled;
+        fillcolor="#E8F5E9";
+        color="#2E7D32";
+        penwidth=2;
+
+        filter [label="Filter by Protocol\nProtocolName=MPRAGE",
+                shape=box, fillcolor="#C8E6C9"];
+        validate [label="Validate Data\nCompleteness",
+                  shape=box, fillcolor="#C8E6C9"];
+        create_feed [label="Create ChRIS Feed\naggregated data",
+                     shape=box, fillcolor="#C8E6C9"];
+        feed_ready [label="Feed Ready\n(FeedID: 456)",
+                    shape=box, style="filled,rounded",
+                    fillcolor="#81C784"];
+    }
+
+    // Phase 3: Process
+    subgraph cluster_process {
+        label="Phase 3: PROCESS";
+        fontsize=12;
+        fontname="Arial Bold";
+        style=filled;
+        fillcolor="#F3E5F5";
+        color="#6A1B9A";
+        penwidth=2;
+
+        instantiate [label="Instantiate Plugin\npl-anonymize",
+                     shape=box, fillcolor="#E1BEE7"];
+        configure [label="Configure Parameters\nprofile=hipaa-safe-harbor",
+                   shape=box, fillcolor="#E1BEE7"];
+        execute [label="Execute Pipeline",
+                 shape=box, fillcolor="#E1BEE7"];
+        monitor [label="Monitor Status\nUntil Complete",
+                 shape=box, fillcolor="#E1BEE7"];
+        result [label="Anonymized Output\n(Plugin Instance 789)",
+                shape=box, style="filled,rounded",
+                fillcolor="#BA68C8"];
+    }
+
+    completion [label="Workflow Complete\nReturn Results to User",
+                shape=box, style="filled,rounded", fillcolor="#C8E6C9",
+                color="#2E7D32", penwidth=2];
+
+    // Define edges
+    user -> search_pacs [label="1", fontsize=10, fontcolor="#FF6F00"];
+    user -> search_cube [label="1", fontsize=10, fontcolor="#FF6F00"];
+
+    search_pacs -> search_results;
+    search_cube -> search_results;
+
+    search_results -> filter [label="2", fontsize=10, fontcolor="#2E7D32"];
+    filter -> validate;
+    validate -> create_feed;
+    create_feed -> feed_ready;
+
+    feed_ready -> instantiate [label="3", fontsize=10, fontcolor="#6A1B9A"];
+    instantiate -> configure;
+    configure -> execute;
+    execute -> monitor;
+    monitor -> result;
+
+    result -> completion;
+
+    // Legend
+    subgraph cluster_legend {
+        label="Current Implementation";
+        fontsize=10;
+        style="dashed";
+        color="#666666";
+
+        legend [label="Each box = 1-3 REST API calls\nTotal: 8-15 calls for full workflow",
+                shape=plaintext, fontsize=9, fontcolor="#666666"];
+    }
+}

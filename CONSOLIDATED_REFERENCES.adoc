@@ -75,3 +75,17 @@
 [37] E. Gamma, R. Helm, R. Johnson, and J. Vlissides, _Design Patterns: Elements of Reusable Object-Oriented Software_. Addison-Wesley, 1994.
 
 [38] N. Ford, R. Parsons, P. Kua, and P. Sadalage, _Building Evolutionary Architectures: Support Constant Change_, 2nd ed. O'Reilly Media, 2021.
+
+[39] C. Rodríguez, M. Báez, F. Daniel, F. Casati, J. C. Trabucco, L. Canali, and G. Percannella, "REST APIs: A Large-Scale Analysis of Compliance with Principles and Best Practices," in _Proc. 16th International Conference on Web Engineering (ICWE)_, ser. Lecture Notes in Computer Science, vol. 9671, pp. 21–39, Springer, 2016. DOI: 10.1007/978-3-319-38791-8_2
+
+[40] A. Neumann, N. Laranjeiro, and J. Bernardino, "An Analysis of Public REST Web Service APIs," _IEEE Transactions on Services Computing_, vol. 14, no. 4, pp. 957–970, July-August 2021. DOI: 10.1109/TSC.2018.2847344
+
+[41] M. Coblenz, W. Guo, K. Voozhian, and J. S. Foster, "A Qualitative Study of REST API Design and Specification Practices," in _Proc. IEEE Symposium on Visual Languages and Human-Centric Computing (VL/HCC)_, pp. 148–157, October 2023. DOI: 10.1109/VL-HCC57772.2023.00024
+
+[42] A. Megargel, C. M. Poskitt, and V. Shankararaman, "Microservices Orchestration vs. Choreography: A Decision Framework," in _Proc. 25th IEEE International Enterprise Distributed Object Computing Conference (EDOC)_, pp. 134–141, October 2021. DOI: 10.1109/EDOC52215.2021.00025
+
+[43] B. Balis, "Hypermedia Workflow: A New Approach to Data-Driven Scientific Workflows," in _Proc. International Conference for High Performance Computing, Networking, Storage and Analysis Companion (SC Companion)_, pp. 100–109, November 2012. DOI: 10.1109/SC.Companion.2012.23
+
+[44] C. Richardson, "Pattern: API Composition," _microservices.io_, accessed December 2024. [Online]. Available: https://microservices.io/patterns/data/api-composition.html
+
+[45] M. Fowler, "Richardson Maturity Model: Steps Toward the Glory of REST," _martinfowler.com_, March 2010. [Online]. Available: https://martinfowler.com/articles/richardsonMaturityModel.html

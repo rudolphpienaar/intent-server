@@ -35,8 +35,6 @@ include::sections/02_alternatives.adoc[]
 
 include::sections/03_ias_architecture.adoc[]
 
-<<<
-
 include::sections/04_objections.adoc[]
 
 include::sections/05_next_steps.adoc[]
@@ -46,8 +44,10 @@ include::sections/05_next_steps.adoc[]
 == References
 
 . Amundsen, M. *Collection+JSON - Document Format.* July 2011. http://amundsen.com/media-types/collection/format/
+. Balis, B. "Hypermedia Workflow: A New Approach to Data-Driven Scientific Workflows." *SC Companion*, IEEE, 2012.
 . Bogner, J., Kotstein, S., Pfaff, T. "Do RESTful API Design Rules Have an Impact on the Understandability of Web APIs?" *Empirical Software Engineering*, vol. 28, no. 6, November 2023.
 . Brooks, F.P. Jr. "No Silver Bullet: Essence and Accidents of Software Engineering." *Computer*, vol. 20, no. 4, pp. 10–19, April 1987.
+. Coblenz, M., Guo, W., Voozhian, K., Foster, J.S. "A Qualitative Study of REST API Design and Specification Practices." *IEEE VL/HCC*, 2023.
 . [ChILI] FNNDSC. "ChILI: ChRIS Interactive Line Interface." GitHub repository. https://github.com/FNNDSC/ChILI Last commit: February 2025.
 . [chrs] FNNDSC. "chrs: ChRIS CLI Client and Rust Library." GitHub repository. https://github.com/FNNDSC/chrs 27 releases, last commit: September 2024.
 . Fielding, R.T. "Architectural Styles and the Design of Network-based Software Architectures." Doctoral dissertation, University of California, Irvine, 2000.
@@ -56,8 +56,12 @@ include::sections/05_next_steps.adoc[]
 . Fowler, M., Lewis, J. "Microservices." martinfowler.com, March 2014.
 . Kruchten, P., Nord, R.L., Ozkaya, I. "Technical Debt: From Metaphor to Theory and Practice." *IEEE Software*, vol. 29, no. 6, Nov/Dec 2012.
 . Lehman, M.M. "Programs, Life Cycles, and Laws of Software Evolution." *Proceedings of the IEEE*, vol. 68, no. 9, September 1980.
+. Megargel, A., Poskitt, C.M., Shankararaman, V. "Microservices Orchestration vs. Choreography: A Decision Framework." *IEEE EDOC*, 2021.
+. Neumann, A., Laranjeiro, N., Bernardino, J. "An Analysis of Public REST Web Service APIs." *IEEE Trans. Services Computing*, vol. 14, no. 4, 2021.
 . Newman, S. *Building Microservices*, 2nd ed. O'Reilly, 2021.
 . Parnas, D.L. "On the Criteria to Be Used in Decomposing Systems into Modules." *Communications of the ACM*, vol. 15, no. 12, December 1972.
+. Richardson, C. "Pattern: API Composition." microservices.io, 2024.
+. Rodríguez, C., et al. "REST APIs: A Large-Scale Analysis of Compliance with Principles and Best Practices." *ICWE*, Springer LNCS vol. 9671, 2016.
 . [pipeline2cube] FNNDSC. "pipeline2cube: Register ChRIS Pipeline Files to CUBE." GitHub repository. https://github.com/FNNDSC/pipeline2cube Last commit: January 2023.
 . [python-chrisclient] FNNDSC. "python-chrisclient: Python Client Library for ChRIS API." GitHub repository. https://github.com/FNNDSC/python-chrisclient
 

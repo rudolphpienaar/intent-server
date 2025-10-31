@@ -7,8 +7,372 @@ image::fig04_external_ias_v2.png[IAS Architecture,width=100%]
 
 Three tiers: *Clients* (UI, Python, CLI) invoke intent endpoints; *IAS* translates requests into CUBE API sequences; *CUBE* remains authoritative resource model with unchanged Collection+JSON API.
 
-*API example:* `POST /intents/anonymize-and-analyze {"patient_id": "12345", "modality": "MRI", "analysis_pipeline": "freesurfer"}` encapsulates 8-15 CUBE operations. Intent APIs use domain terminology (patient IDs) not CUBE identifiers (feed UUIDs).
+*API example:* `POST /intents/pipeline {"search": {"PatientID": "12345"}, "gather": {"ProtocolName": "T1"}, "pipeline": {"name": "freesurfer-pipeline"}}` encapsulates 8-15 CUBE operations. Intent APIs use domain terminology (patient IDs, protocol names) not CUBE identifiers (feed UUIDs).
 
-*Implementation:* Standard microservices [Newman 2021]: containerized deployment, stateless operation, authentication delegation, centralized observability, incremental adoption.
+*Implementation:* Standard microservices patterns [11][15]: containerized deployment, stateless operation, authentication delegation, centralized observability, incremental adoption.
 
-*Benefits:* Shared orchestration (eliminates duplication), evolutionary independence (separate release schedules [Parnas 1972]), testability (mock APIs), progressive disclosure (intents for common workflows, CUBE for advanced control). Backend-for-Frontend pattern resolving hypermedia-procedural impedance mismatch.
+*Benefits:* Shared orchestration (eliminates duplication), evolutionary independence (separate release schedules [16]), testability (mock APIs), progressive disclosure (intents for common workflows, CUBE for advanced control). Backend-for-Frontend pattern resolving hypermedia-procedural impedance mismatch.
+
+=== Architectural Validation from Prior Work
+
+The IAS pattern has independent validation across microservices and REST API literature, though not previously applied to hypermedia systems. **Backend-for-Frontend (BFF)** [16] emerged at SoundCloud to address identical client complexity problems: when general-purpose APIs cannot efficiently serve diverse client needs, a dedicated orchestration layer provides task-oriented abstractions. **API Composition** [18] formalizes the pattern of aggregating data from multiple services. **Orchestration frameworks** [14] document that centralized workflow coordination reduces client complexity despite introducing service coupling (precisely this trade-off).
+
+**Empirical evidence supports necessity**: Large-scale studies found only **0.8% of REST APIs comply with HATEOAS** [19], and **only 4.2% implement hypermedia navigation** [15]. Industry surveys show **79% of practitioners consider HTTP methods alone (Level 2) sufficient for RESTfulness** [5], revealing that pure hypermedia fails pragmatic adoption tests. The IAS architecture addresses this documented gap: maintain HATEOAS compliance where valuable (CUBE's declarative resource model) while providing procedural abstractions where needed (IAS workflow endpoints).
+
+The pattern is established; the contribution here is application to Collection+JSON hypermedia APIs and domain-specific instantiation via the SeaGaP model.
+
+=== The SeaGaP Pattern: Search-Gather-Pipeline
+
+The majority of ChRIS workflows follow a common three-step pattern termed *SeaGaP* (SEArch/GAther/Pipeline):
+
+1. *Search:* Locate data within CUBE's filesystem using clinical identifiers (patient accession numbers, study dates, protocol names)
+2. *Gather:* Filter search results by imaging parameters (modality, sequence type) and create a ChRIS feed containing the selected data
+3. *Pipeline:* Execute a ChRIS pipeline (or package operation) on the gathered feed
+
+This pattern currently requires 8-15 manual REST calls with Collection+JSON parsing, conditional logic, and error handling distributed across client code. An intent-based API can collapse this workflow into a single declarative request.
+
+==== Example Intent: Download
+
+*Use case:* "Download the MPRAGE scan of PatientAccessionNumber 12344"
+
+*Current approach:* Requires 8-15 manual REST calls: search CUBE filesystem for patient data using clinical identifiers, filter search results by protocol name (MPRAGE), handle no-data-found conditions, create a ChRIS feed, link each matching scan to the feed, instantiate a zip plugin on the feed, poll for plugin completion status, extract the download URL from the response. Error handling, conditional logic, and Collection+JSON response parsing are distributed across client code.
+
+.Intent-based approach
+[source,http]
+----
+POST /intents/download
+{
+  "search": {"PatientID": "12344"},
+  "gather": {"ProtocolName": "MPRAGE"}
+}
+→ 202 Accepted
+{
+  "jobId": "intent-789",
+  "statusUrl": "/intent/jobs/intent-789"
+}
+
+# Poll for completion
+GET /intent/jobs/intent-789
+→ 200 OK
+{
+  "status": "completed",
+  "feedId": 456,
+  "downloadUrl": "https://cube.example.com/api/v1/files/789/download.zip"
+}
+----
+
+==== Example Intent: Pipeline
+
+*Use case:* "Run FreeSurfer pipeline on T1-weighted scan of PatientID 12344"
+
+*Current approach:* Requires the same 8-15 REST calls as the download workflow (search CUBE filesystem, filter by protocol, create feed, link data), followed by additional operations to instantiate the pipeline on the feed with pipeline-specific parameters, poll for pipeline completion status across potentially multiple plugin instances, and handle multi-step pipeline execution errors. The complexity multiplies with pipeline length and parameter validation requirements.
+
+.Intent-based approach
+[source,http]
+----
+POST /intents/pipeline
+{
+  "search": {"PatientID": "12344"},
+  "gather": {"ProtocolName": "T1"},
+  "pipeline": {
+    "name": "freesurfer-pipeline",
+    "parameters": {
+      "reconstruct_all": true,
+      "subjects_dir": "/output",
+      "parallel": 4
+    }
+  }
+}
+→ 202 Accepted
+{
+  "jobId": "intent-790",
+  "statusUrl": "/intent/jobs/intent-790"
+}
+----
+
+=== API Design: Two Complementary Approaches
+
+It is proposed to support two URL design patterns that serve different user mental models:
+
+==== Action-First: Task-Oriented
+
+Starts with the operation, mirrors natural language workflow framing.
+
+[source,http]
+----
+POST /intents/download
+POST /intents/pipeline
+----
+
+*Mental model:* "I want to *download* some data" or "I want to run a *pipeline* on data" (verb → object)
+
+*Advantages:* Intuitive for workflow-oriented users (clinicians, researchers), concise URLs, aligns with task-driven interfaces.
+
+*Trade-offs:* Verbs in URLs deviate from strict REST resource modeling, less discoverable (cannot enumerate available actions for specific data).
+
+==== Data-First: Resource-Oriented
+
+Starts with the data location, enables action discovery.
+
+[source,http]
+----
+# Discover available actions
+OPTIONS /intent/data/CUBE/PatientID/12344
+→ 200 OK
+X-Available-Actions: download, pipeline
+
+# Execute action
+POST /intent/data/CUBE/PatientID/12344/actions/pipeline
+{
+  "protocolFilter": "MPRAGE",
+  "pipeline": {
+    "name": "freesurfer-pipeline",
+    "parameters": {"reconstruct_all": true}
+  }
+}
+----
+
+*Mental model:* "I have *data*, what can I do with it?" (subject → verb)
+
+*Advantages:* RESTful resource modeling, discoverable via OPTIONS, explicit data location in CUBE filesystem, supports batch operations on data collections.
+
+*Trade-offs:* More verbose URLs, additional HTTP round-trip for discovery, less intuitive for task-driven workflows.
+
+==== Comparison
+
+[cols="3,4,4",options="header"]
+|===
+|Aspect |Action-First |Data-First
+
+|REST compliance
+|Verbs in URLs (anti-pattern)
+|Nouns as resources ✓
+
+|Discoverability
+|Requires documentation
+|`OPTIONS` returns available actions ✓
+
+|Primary use case
+|Workflow tasks ✓
+|Data exploration, batch operations ✓
+
+|URL complexity
+|Concise ✓
+|Hierarchical, longer
+
+|Data source specification
+|Query param or body
+|Explicit in path (`/CUBE/PatientID/...`) ✓
+
+|Learning curve
+|Immediate ✓
+|Requires understanding hierarchy
+|===
+
+==== Recommendation: Phased Introduction
+
+*Phase 1 (Weeks 1-3):* Implement *action-first* only.
+
+* Faster time-to-value, simpler stakeholder communication
+* Prioritize 2 core SeaGaP intents: `download` and `pipeline`
+* Example: `POST /intents/download` and `POST /intents/pipeline` with JSON body specifying search/gather/pipeline criteria
+
+*Phase 2 (Weeks 11+):* Add *data-first* for power users.
+
+* Implement alongside action-first (both routes map to same internal intent engine)
+* Enable action discovery: `OPTIONS /intent/data/{source}/{idType}/{idValue}`
+* Target audience: batch processing scripts, data engineering workflows
+
+*Architecture:* Both URL styles parse into identical internal representation (`Intent{search, gather, pipeline}`). The routing layer translates URL patterns; the orchestration engine remains unchanged. This dual-interface approach maximizes usability across user types while maintaining implementation simplicity.
+
+*Phase 1 deliverable:* Action-first API supporting SeaGaP pattern validates core architecture before investing in data-first discoverability features.
+
+=== Error Handling and Edge Cases
+
+Robust error handling distinguishes production-ready systems from prototypes. The SeaGaP pattern introduces failure modes at each phase: data not found during Search, ambiguous results during Gather, and pipeline failures during Pipeline execution. The IAS must detect, classify, and communicate these failures with sufficient detail for client recovery or user intervention.
+
+==== Search Phase Failures
+
+*Patient/Accession not found in CUBE:*
+[source,http]
+----
+POST /intents/download
+{"search": {"PatientID": "99999"}, ...}
+
+→ 404 Not Found
+{
+  "error": "PatientNotFound",
+  "message": "No data found in CUBE for PatientID 99999",
+  "phase": "search",
+  "suggestion": "Verify patient ID or check if data has been registered in CUBE"
+}
+----
+
+*CUBE filesystem search failure:*
+[source,http]
+----
+→ 503 Service Unavailable
+{
+  "error": "SearchUnavailable",
+  "message": "CUBE filesystem search temporarily unavailable",
+  "phase": "search",
+  "retryable": true,
+  "retryAfter": 30
+}
+----
+
+==== Gather Phase Failures
+
+*No matching protocol found:*
+[source,http]
+----
+POST /intents/download
+{"search": {"PatientID": "12344"},
+ "gather": {"ProtocolName": "MPRAGE"}}
+
+→ 404 Not Found
+{
+  "error": "NoMatchingProtocol",
+  "message": "Patient 12344 has no scans with ProtocolName=MPRAGE in CUBE",
+  "phase": "gather",
+  "availableProtocols": ["T1", "T2-FLAIR", "DWI"],
+  "suggestion": "Use one of the available protocols listed above"
+}
+----
+
+*Ambiguous results (multiple matches):*
+[source,http]
+----
+→ 409 Conflict
+{
+  "error": "AmbiguousGatherResults",
+  "message": "Found 3 MPRAGE scans for patient 12344 in CUBE",
+  "phase": "gather",
+  "matches": [
+    {"scanDate": "2025-01-15", "seriesId": "1.2.3.4.5"},
+    {"scanDate": "2025-02-20", "seriesId": "1.2.3.4.6"},
+    {"scanDate": "2025-03-10", "seriesId": "1.2.3.4.7"}
+  ],
+  "resolution": "Add 'gatherStrategy' parameter: 'latest', 'earliest', 'all', or specify 'scanDate'"
+}
+----
+
+*Resolution with explicit strategy:*
+[source,http]
+----
+POST /intents/download
+{
+  "search": {"PatientID": "12344"},
+  "gather": {
+    "ProtocolName": "MPRAGE",
+    "gatherStrategy": "latest"
+  }
+}
+
+→ 202 Accepted
+{"jobId": "intent-790", "statusUrl": "/intent/jobs/intent-790"}
+----
+
+==== Pipeline Phase Failures
+
+*Pipeline not available:*
+[source,http]
+----
+POST /intents/pipeline
+{"pipeline": {"name": "nonexistent-pipeline"}, ...}
+
+→ 404 Not Found
+{
+  "error": "PipelineNotFound",
+  "message": "Pipeline 'nonexistent-pipeline' not registered in CUBE",
+  "phase": "pipeline",
+  "availablePipelines": ["freesurfer-pipeline", "fetal-brain-pipeline", "covidnet-pipeline"]
+}
+----
+
+*Pipeline execution failure:*
+[source,http]
+----
+GET /intent/jobs/intent-789
+
+→ 200 OK
+{
+  "jobId": "intent-789",
+  "status": "failed",
+  "completedPhases": ["search", "gather"],
+  "failedPhase": "pipeline",
+  "error": {
+    "type": "PipelineExecutionFailed",
+    "message": "freesurfer-pipeline failed at step 3 (recon-all)",
+    "pipelineLogs": "Error: Insufficient memory for volumetric reconstruction",
+    "feedId": 456,
+    "pluginInstanceId": 789
+  },
+  "recovery": "Feed 456 remains intact; adjust pipeline parameters and retry with /intents/retry/intent-789"
+}
+----
+
+*Plugin (package operation) failure for download intent:*
+[source,http]
+----
+GET /intent/jobs/intent-790
+
+→ 200 OK
+{
+  "jobId": "intent-790",
+  "status": "failed",
+  "completedPhases": ["search", "gather"],
+  "failedPhase": "pipeline",
+  "error": {
+    "type": "PackageOperationFailed",
+    "message": "pl-zip plugin failed during packaging",
+    "pluginLogs": "Error: Disk quota exceeded",
+    "feedId": 457
+  },
+  "recovery": "Feed 457 created successfully; free disk space and retry"
+}
+----
+
+==== Timeout and Long-Running Operations
+
+Intents return `202 Accepted` immediately, avoiding HTTP timeout issues:
+
+[source,http]
+----
+POST /intents/pipeline  # Long-running operation (e.g., FreeSurfer: 5-30 minutes)
+{
+  "search": {"PatientID": "12344"},
+  "gather": {"ProtocolName": "T1"},
+  "pipeline": {
+    "name": "freesurfer-pipeline",
+    "parameters": {"reconstruct_all": true}
+  }
+}
+→ 202 Accepted
+{
+  "jobId": "intent-791",
+  "estimatedDuration": "15-20 minutes",
+  "statusUrl": "/intent/jobs/intent-791"
+}
+
+# Poll for status
+GET /intent/jobs/intent-791
+→ 200 OK
+{
+  "status": "processing",
+  "currentPhase": "pipeline",
+  "progress": {
+    "search": "completed",
+    "gather": "completed",
+    "pipeline": "in_progress (45% complete - running recon-all)"
+  }
+}
+----
+
+==== Error Handling Principles
+
+1. *Phase attribution:* Every error identifies which SeaGaP phase failed (`search`, `gather`, `pipeline`)
+2. *Actionable suggestions:* Error messages include next steps or alternatives when possible
+3. *Partial state preservation:* Failed intents preserve successful phase results (e.g., feed created during Gather survives Pipeline failure)
+4. *Retryability indication:* Transient errors (CUBE filesystem temporarily unavailable) include `"retryable": true`; permanent errors (patient not found) do not
+5. *Detailed context:* Errors provide sufficient information for debugging (pipeline logs, available alternatives)

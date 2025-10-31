@@ -47,25 +47,28 @@ Success criteria for Phase 1: A functional IAS that can authenticate users, brok
 
 The second phase expands intent coverage and integrates with the ChRIS UI. Key deliverables include:
 
-- **Intent catalog expansion**: Implementation of 15-20 common workflows identified through UI code analysis and user research
-- **ChRIS UI integration**: Refactoring the ChRIS UI to invoke IAS endpoints for supported workflows, establishing patterns for dual-mode operation (IAS intents where available, direct CUBE calls otherwise)
-- **Intent governance framework**: Establishing conventions for intent naming, parameter schemas, versioning, and documentation
-- **Observability infrastructure**: Distributed tracing integration (OpenTelemetry), metrics dashboards (Prometheus/Grafana), and operational runbooks
-- **Performance optimization**: Caching strategies, connection pooling, and request batching to minimize latency overhead
+- **SeaGaP intent catalog**: Implementation of 10-15 SeaGaP pattern variants (`anonymize`, `segment`, `register`, `export`, `reconstruct`, `quality-check`, `batch-process`) covering 80% of common workflows; each intent encapsulating Search-Gather-Process phases as documented in Section 2.4.4
+- **Action-first API stabilization**: Refinement of task-oriented endpoints (`POST /intents/{action}`) based on Phase 1 feedback; comprehensive error handling for all three SeaGaP phases with actionable recovery guidance
+- **ChRIS UI integration**: Refactoring UI components (anonymization wizard, batch upload processor, pipeline execution modal, patient data browser) to invoke IAS endpoints; establishing patterns for dual-mode operation (IAS intents where available, direct CUBE calls otherwise)
+- **Client ecosystem enablement**: Python SDK with intent abstractions; integration with `python-chrisclient` and `chrs` CLI; example Jupyter notebooks demonstrating workflow composition; comprehensive API documentation with OpenAPI specifications
+- **Observability infrastructure**: Distributed tracing integration (OpenTelemetry), metrics dashboards (Prometheus/Grafana) tracking per-phase latency and success rates, operational runbooks for common failure scenarios
+- **Error handling validation**: Implementation of comprehensive error scenarios per Section 2.4.5; validation that error messages enable self-service resolution >80% of cases; measurement of time-to-diagnosis for common failures
 
-Success criteria for Phase 2: The ChRIS UI uses IAS for majority of common workflows; operational metrics demonstrate acceptable performance and reliability; developer documentation enables external contributions.
+Success criteria for Phase 2: The ChRIS UI uses IAS for majority of common workflows; at least one non-UI client (Python/CLI) uses intent APIs in production; cumulative >40% reduction in client code complexity; operational metrics demonstrate acceptable performance (<300ms p95 latency) and reliability (>99% success rate); developer documentation enables external contributions.
 
 **Phase 3: Ecosystem Enablement (Months 11-18)**
 
 The final phase focuses on ecosystem growth and advanced capabilities. Key deliverables include:
 
-- **Multi-language client SDKs**: JavaScript, Rust, and potentially Go client libraries enabling diverse client development
-- **Intent composition framework**: Support for complex workflows expressed as compositions of simpler intents
-- **LLM integration examples**: Reference implementations demonstrating natural language to intent translation using multiple LLM providers
-- **Plugin developer tools**: Utilities enabling plugin authors to expose their tools through intent interfaces
-- **Federation exploration**: Prototype implementations of multi-institutional scenarios with shared intent vocabularies
+- **Data-first API implementation**: Deploy resource-oriented endpoints (`/intent/data/{source}/{idType}/{idValue}/actions/*`) alongside action-first as documented in Section 2.4.5; implement OPTIONS-based action discovery; validate improved discoverability for batch processing and data exploration use cases; create migration guide demonstrating dual-interface patterns
+- **Complete UI refactoring**: Migrate all remaining orchestration logic from UI components to intent APIs; validate >50% reduction in UI codebase complexity (measured by cyclomatic complexity, lines of code); demonstrate that UI becomes pure presentation layer consuming intent endpoints
+- **Multi-language client SDKs**: Stable SDKs for Python, JavaScript, Go, and potentially Rust enabling diverse client development; comprehensive API documentation with OpenAPI specifications; example repositories demonstrating common intent composition patterns
+- **Intent composition framework**: Support for complex workflows expressed as compositions of simpler intents; enable chaining of search results across multiple SeaGaP operations
+- **LLM integration examples**: Reference implementations demonstrating natural language to intent translation using multiple LLM providers; validation of intent abstraction compatibility with tool-use patterns
+- **Plugin developer tools**: Utilities enabling plugin authors to expose their tools through intent interfaces; streamlined intent definition workflow
+- **Production hardening**: Blue-green deployment strategy; canary rollout with gradual traffic migration (10%→50%→100%); comprehensive backup/rollback procedures; production monitoring and alerting infrastructure; zero-downtime deployment validation
 
-Success criteria for Phase 3: External developers successfully contribute new clients and intent implementations; demonstrable LLM-driven workflow execution; clear path toward federated operation.
+Success criteria for Phase 3: External developers successfully contribute new clients and intent implementations; >80% of orchestration traffic routes through IAS; 2+ external clients (non-ChRIS-UI) in production use; data-first API demonstrates adoption by batch processing scripts; demonstrable LLM-driven workflow execution; operational excellence (99.9% uptime, <500ms p99 latency); clear path toward federated operation.
 
 This phased approach manages risk while delivering incremental value. Phase 1 establishes feasibility with minimal disruption; Phase 2 integrates with existing infrastructure and validates the approach at scale; Phase 3 enables the ecosystem growth and advanced capabilities that justify the architectural investment.
 

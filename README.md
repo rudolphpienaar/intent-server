@@ -114,15 +114,27 @@ asciidoctor -a pdf-theme=engineering-brief/compact-theme.yml \
 
 ## Editing Figures
 
-The diagrams are created in [draw.io](https://app.diagrams.net/):
+The architectural diagrams are created using external tools and stored as PNG files in `figures-source/png/`:
 
-1. Open `figures-source/drawio/figXX_*.drawio` in draw.io
-2. Edit as needed
-3. Export as PNG (300+ DPI) to all three figure directories:
-   - `paper-research/figures/`
-   - `paper-engineering/figures/`
-   - `engineering-brief/figures/`
-4. Commit both source (.drawio) and output (.png) files
+**Current figures:**
+- `ChRIS_arch_IAS - Status Quo.png` - Current architecture (fig01)
+- `ChRIS_arch_IAS - IAS.png` - External IAS architecture (fig04)
+
+**To update figures:**
+
+1. Edit the PNG files in `figures-source/png/` using your preferred tool
+2. Run the copy script to distribute to all three paper directories:
+   ```bash
+   ./figures-source/scripts/copy_figures.sh
+   ```
+3. This copies:
+   - Status Quo → `fig01_current_architecture_v2.png` (all three directories)
+   - IAS → `fig04_external_ias_v2.png` (all three directories)
+4. Commit both source PNG files and the copied figures
+
+**Legacy scripts:**
+- `figures-source/scripts/generate_diagrams.py` - Old matplotlib-based generation (deprecated)
+- `figures-source/graphviz/` - Graphviz sources for SeaGaP diagram (still used)
 
 ## Key Contributions
 

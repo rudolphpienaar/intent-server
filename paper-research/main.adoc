@@ -35,6 +35,10 @@ include::sections/01_introduction.adoc[]
 
 <<<
 
+include::sections/01_5_related_work.adoc[]
+
+<<<
+
 include::sections/02_methods.adoc[]
 
 include::sections/02_1_current_architecture.adoc[]

@@ -78,6 +78,168 @@ The IAS API design should prioritize clarity and usability. Where CUBE's Cj API 
 
 Operational deployment follows standard microservices practice. The IAS runs as a containerized service, horizontally scalable and independently versioned. It communicates with CUBE over HTTP, introducing network latency but gaining deployment independence. Kubernetes, Docker Swarm, or similar orchestration platforms manage service lifecycle, health checks, and traffic routing. Observability tooling—Prometheus, Grafana, OpenTelemetry—instruments request flows, enabling performance monitoring and debugging across service boundaries.
 
+==== Proposed Intent Patterns: The SeaGaP Model
+
+While the architectural advantages of the IAS approach appear compelling on structural grounds, the practical viability of this design depends crucially on whether actual ChRIS workflows map cleanly to intent abstractions. To validate this alignment, we propose analyzing the most common workflow pattern in ChRIS usage: what we term the *SeaGaP* pattern (SEArch/GAther/Pipeline).
+
+Observational analysis of ChRIS deployments suggests that the majority of clinical imaging workflows follow a consistent three-phase structure:
+
+1. *Search:* Locate imaging data within CUBE's filesystem using clinical identifiers (patient accession numbers, study dates, protocol names).
+
+2. *Gather:* Filter search results by imaging parameters (modality, sequence type, acquisition protocol) and aggregate selected data into a ChRIS feed—the atomic unit of processable data in the CUBE model.
+
+3. *Pipeline:* Execute a ChRIS pipeline (or package operation for data export) on the gathered feed, passing pipeline-specific parameters.
+
+This pattern currently requires clients to orchestrate 8-15 discrete REST operations: CUBE filesystem queries, Collection+JSON parsing, conditional filtering logic, feed creation with proper structural metadata, data-to-feed linking, pipeline instantiation with parameter validation, and asynchronous polling for completion status. Each operation introduces failure modes, error-handling complexity, and opportunities for client-side implementation divergence.
+
+An intent-based API could collapse this multi-step orchestration into a single declarative request. Consider two canonical examples representing the core intent types we propose to validate:
+
+.Example 1: Download intent
+*Use case:* "Download the MPRAGE scan of PatientID 12344"
+
+Current approach requires 8-15 REST calls for filesystem search, filtering, feed creation, data linking, zip plugin instantiation, and polling.
+
+Proposed intent-based approach:
+[source,http]
+----
+POST /intents/download HTTP/1.1
+Content-Type: application/json
+
+{
+  "search": {"PatientID": "12344"},
+  "gather": {"ProtocolName": "MPRAGE"}
+}
+
+→ 202 Accepted
+{
+  "jobId": "intent-789",
+  "statusUrl": "/intent/jobs/intent-789"
+}
+----
+
+.Example 2: Pipeline intent
+*Use case:* "Run FreeSurfer pipeline on T1-weighted scan of PatientID 12344"
+
+Proposed intent-based approach:
+[source,http]
+----
+POST /intents/pipeline HTTP/1.1
+Content-Type: application/json
+
+{
+  "search": {"PatientID": "12344"},
+  "gather": {"ProtocolName": "T1"},
+  "pipeline": {
+    "name": "freesurfer-pipeline",
+    "parameters": {
+      "reconstruct_all": true,
+      "subjects_dir": "/output",
+      "parallel": 4
+    }
+  }
+}
+
+→ 202 Accepted
+{"jobId": "intent-790", "statusUrl": "/intent/jobs/intent-790"}
+----
+
+The intent abstraction encapsulates the entire workflow, moving orchestration complexity from client code into the IAS. Whether this simplification translates to measurable reductions in client complexity, development time, and defect rates remains an empirical question requiring controlled validation (see Research Question RQ1 in Section 1). The choice of these two intents—`download` and `pipeline`—as initial validation targets reflects current ChRIS usage patterns, though whether they prove representative of the full workflow space requires empirical confirmation.
+
+==== API Design Alternatives: Action-First vs. Data-First
+
+If the SeaGaP pattern proves representative of ChRIS workflows, a secondary design question emerges: how should intent endpoints be structured? We identify two complementary approaches, each aligned with different user mental models.
+
+*Action-first (task-oriented) design* places the operation at the URL's root, mirroring natural language task framing:
+
+[source,http]
+----
+POST /intents/download
+POST /intents/pipeline
+----
+
+This structure aligns with workflow-oriented thinking: "I want to *download* some data" or "I want to run a *pipeline*" (verb → object). The approach offers concise URLs and intuitive semantics for task-driven interfaces. However, it places verbs in URLs—a deviation from strict REST resource modeling—and provides limited discoverability (clients cannot enumerate available operations for specific data without external documentation).
+
+*Data-first (resource-oriented) design* inverts this structure, beginning with data location and enabling action discovery:
+
+[source,http]
+----
+# Discover available operations
+OPTIONS /intent/data/CUBE/PatientID/12344
+→ 200 OK
+X-Available-Actions: download, pipeline
+
+# Execute discovered operation
+POST /intent/data/CUBE/PatientID/12344/actions/pipeline
+Content-Type: application/json
+
+{
+  "protocolFilter": "T1",
+  "pipeline": {
+    "name": "freesurfer-pipeline",
+    "parameters": {"reconstruct_all": true}
+  }
+}
+----
+
+This structure conforms more closely to RESTful resource modeling, supports programmatic discovery via HTTP OPTIONS, and makes data location explicit within CUBE's filesystem. The trade-off is increased URL verbosity and an additional HTTP round-trip for discovery—acceptable costs for batch operations but potentially burdensome for interactive workflows.
+
+Neither approach dominates across all criteria. The table below summarizes key trade-offs:
+
+[cols="3,4,4",options="header"]
+|===
+|Criterion |Action-First |Data-First
+
+|REST compliance
+|Verbs in URLs (anti-pattern per Fielding [1])
+|Nouns as resources (RESTful)
+
+|Discoverability
+|Requires external documentation
+|`OPTIONS` returns available actions
+
+|Primary use case
+|Interactive workflows, task-driven UIs
+|Batch processing, data exploration
+
+|URL complexity
+|Concise (e.g., `/intents/download`)
+|Hierarchical (e.g., `/intent/data/CUBE/.../actions/pipeline`)
+
+|Data source specification
+|Query parameter or request body
+|Explicit in path (`/CUBE/PatientID/...`)
+
+|Learning curve
+|Immediate (matches natural language)
+|Requires understanding resource hierarchy
+|===
+
+Both patterns could coexist within a single IAS implementation, routing to a shared internal orchestration engine. The routing layer would translate URL patterns into a unified intent representation:
+
+[source,python]
+----
+class Intent:
+    search: SearchCriteria    # Patient ID, study date, etc.
+    gather: GatherCriteria    # Protocol filters, modality selection
+    pipeline: PipelineAction  # Pipeline name, pipeline-specific parameters
+----
+
+Whether this dual-interface design improves usability relative to a single canonical form, and whether the added surface area justifies the flexibility, are questions requiring empirical validation through developer experience studies (see RQ2 in Section 1).
+
+==== Error Handling Considerations
+
+The SeaGaP pattern's multi-phase structure introduces distinct failure modes requiring careful error classification and communication. We propose an error handling model that attributes failures to specific phases, provides actionable recovery guidance, and preserves partial progress where possible.
+
+*Search phase failures* occur when requested data cannot be located—patient identifiers not found in CUBE's filesystem, temporary search unavailability, or authorization restrictions blocking access. These failures should distinguish between transient conditions (CUBE filesystem temporarily unavailable, retry recommended) and permanent conditions (patient does not exist in CUBE, no retry beneficial).
+
+*Gather phase failures* arise from ambiguity or absence in filtering results. If a search returns multiple MPRAGE scans for a patient but the gather criteria do not specify which to select, the intent cannot proceed without additional disambiguation parameters. Conversely, if no results match the gather filter (e.g., searching for MPRAGE when only T1 and T2 scans exist in CUBE), the intent should communicate available alternatives to guide user correction. One proposed solution introduces a `gatherStrategy` parameter (`latest`, `earliest`, `all`) to resolve ambiguity explicitly.
+
+*Pipeline phase failures* reflect pipeline unavailability, execution errors, or resource exhaustion. Unlike Search and Gather failures that prevent workflow initiation, Pipeline failures occur after potentially expensive operations (feed creation, data linking) have completed. Error responses should preserve these intermediate artifacts and provide continuation mechanisms—enabling retry without re-executing successful phases. For the `download` intent specifically, failures in the packaging operation (e.g., zip plugin) should similarly preserve the created feed.
+
+For long-running operations, asynchronous execution with status polling prevents HTTP timeout issues. Intent requests return `202 Accepted` with a job identifier and status URL, allowing clients to poll progress at appropriate intervals. Status responses should indicate current phase, completion percentage, and estimated remaining time where feasible.
+
+The effectiveness of these error handling strategies in reducing client complexity and improving developer experience requires empirical validation (Research Question RQ2). Comparative studies measuring time-to-recovery, error comprehension rates, and client-side error-handling code volume would inform whether the proposed model achieves its usability goals.
+
 ==== Trade-offs and Limitations
 
 While the externalized IAS model addresses many architectural shortcomings, it introduces trade-offs. The additional service layer increases operational complexity: another component to deploy, monitor, version, and debug. Network communication between IAS and CUBE adds latency compared to in-process orchestration (as in Section 2.3). Distributed system failure modes—network partitions, timeout cascades, inconsistent state—become operational concerns requiring careful design and testing.

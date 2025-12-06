@@ -104,6 +104,18 @@ asciidoctor -a pdf-theme=engineering-brief/compact-theme.yml \
   -o build/engineering_brief.pdf engineering-brief/main.adoc
 ```
 
+**Makefile factory (uses one rule to build any paper; PDF via Tectonic by default):**
+```bash
+make papers                    # HTML/LaTeX/PDF/DOCX for all papers
+make paper_research            # Research outputs in build/
+make paper_engineering         # Engineering outputs in build/
+make engineering_brief         # Brief outputs in build/
+make agentic-nondeterminism    # Academic-styled LaTeX/PDF for the agentic paper
+
+# Pick PDF engine: defaults to tectonic; override to pdflatex if needed
+PDF_ENGINE=pdflatex make agentic-nondeterminism
+```
+
 **Check word count:**
 ```bash
 ./scripts/word-count.sh              # All versions

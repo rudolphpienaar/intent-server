@@ -1,0 +1,16 @@
+
+Several academic papers argue that hallucinations in AI agents are not just occasional errors but an
+inevitable and intrinsic characteristic rooted in the fundamental mathematical and logical structure of large language models (LLMs). 
+Key scholarly papers on this topic include:
+
+    "LLMs Will Always Hallucinate, and We Need to Live With This" (arXiv, 2024): This paper argues that hallucinations stem from the fundamental mathematical structure of LLMs and that it is impossible to eliminate them entirely through architectural improvements or dataset enhancements. The authors introduce the concept of "structural hallucination" as an innate limitation.
+    "Hallucination is Inevitable: An Innate Limitation of Large Language Models" (arXiv, 2024): This work formalizes the problem and uses results from learning theory to show that LLMs cannot learn all computable functions, thus inevitably hallucinating when used as general problem solvers.
+    "Why Language Models Hallucinate" (OpenAI, 2025): Researchers from OpenAI suggest that LLMs often hallucinate because the training and evaluation procedures reward guessing over acknowledging uncertainty, encouraging models to produce plausible but incorrect statements.
+    "LLM-based Agents Suffer from Hallucinations" (arXiv, 2025): This survey provides a comprehensive analysis of hallucinations in LLM-based agents, categorizing the types of hallucinations that occur at different stages of the agent's workflow (e.g., in tool use or planning) and exploring their underlying causes.
+    "A Survey on Hallucination in Large Language Models" (arXiv, 2024): This paper surveys the various causes of hallucinations, from model architecture and training data issues to decoding strategies, and provides a framework for understanding and addressing them. 
+
+These papers challenge the prevailing notion that hallucinations can be fully mitigated, suggesting instead that researchers and developers must find ways to manage and work within these inherent limitations. 
+
+https://arxiv.org/html/2509.18970v1
+
+

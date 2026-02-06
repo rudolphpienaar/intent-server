@@ -1,0 +1,2 @@
+[console_scripts]
+ohbm2026 = ohbm2026.__main__:main

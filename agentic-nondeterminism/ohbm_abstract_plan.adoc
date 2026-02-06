@@ -1,0 +1,49 @@
+= OHBM 2026 Abstract: Agentic Nondeterminism Modeling Plan
+:author: Draft plan
+:revdate: {localdate}
+
+== Goal
+Prepare an OHBM 2026 abstract (theory/simulation only) about failure modes of agentic orchestration in neuroimaging pipelines (FreeSurfer-style workflows on ChRIS) and the bounding effect of an Intent-Action Server (IAS). This note defines the math model, metrics, and planned figures for a quick Python simulation that will feed the abstract.
+
+== Model assumptions
+* Pipeline depth: N levels of orchestration (API/CLI calls may branch).
+* Branching factor: b controls fan-out; effective calls = geometric series, not just N.
+* Per-step error (unbounded agent): p.
+* Per-step error (IAS-bounded): p' < p, reflecting constrained actions and validated params.
+* Correlated cascades: c in [0, 1] increases effective error with depth to capture parameter drift/tool mismatch (c = 0 reduces to independent errors).
+* Misreport rate: r = probability the agent reports success despite an underlying failure.
+* Human-in-loop intent check: reduces r and p' for IAS scenario by enforcing structured outputs and schema validation.
+
+== Core equations
+* Effective calls with branching b: N_eff = ((b^N) - 1) / (b - 1) for b > 1; else N.
+* Independent failure probability: F_ind = 1 - (1 - p)^(N_eff).
+* Correlated failure probability (simple linear cascade term): F_corr = 1 - (1 - p)^(N_eff) * (1 + c * (N_eff - 1)).  (Clip to [0, 1].)
+* Misreport probability: M = F * r, where F is either F_ind or F_corr.
+* IAS-bounded versions swap p → p', c → c', r → r', with p' << p and r' << r.
+
+== Metrics to report
+* Failure probability vs. pipeline depth N (log-scaled) at fixed p, p', c, c', b, b'.
+* Sensitivity of failure to per-step error p at fixed N.
+* Misreport probability vs. N (with/without IAS).
+* “Safe region” threshold: smallest N such that F <= α (e.g., α = 0.05) for given p; compare unbounded vs. IAS-bounded.
+
+== Simulation plan (Python, upcoming)
+1. Sweep N in [1, 30], p in {0.5%, 1%, 2%, 5%}, c in {0, 0.05, 0.1}, b in {1.0, 1.2, 2.0}.
+2. Compute F_ind, F_corr, and IAS variants (use p' ≈ 0.25 p; c' ≈ 0.25 c; r' ≈ 0.1 r; b' < b).
+3. Compute misreport M using r = {0.1, 0.2}; r' = 0.02.
+4. Identify N where F crosses 5% and 20% thresholds for each scenario.
+
+== Figures to generate (max 2 for OHBM)
+* Fig 1: Failure probability vs. N (log x-axis; lines: unbounded independent, unbounded correlated, IAS independent, IAS correlated). Annotate thresholds where F crosses 5% and 20%.
+* Fig 2: Misreport probability vs. N (log x-axis; unbounded vs. IAS) with callouts on reduced r'. Optionally inset sensitivity vs. p at fixed N = 12.
+
+== Abstract writing constraints
+* Title < 100 chars: “Agents will always lie: pitfalls of agentic AI in neuroimaging workflows”.
+* Intro ≤ 2,000 chars; Methods/Results/Conclusions ≤ 4,000 chars each.
+* Up to 5 AMA references; reuse existing bib where possible and add recent tool-use reliability/neuroimaging workflow papers if missing.
+* Results will cite simulated projections (no empirical data yet) and note validation planned before conference.
+
+== Next actions
+1. Code the Python sweeps and emit two publication-ready PNG/SVG figures.
+2. Extract quantitative highlights (e.g., “at p = 1%, N = 15 → F ≈ 14% unbounded vs. 3% IAS”).
+3. Draft the abstract text with AMA references and figure callouts.

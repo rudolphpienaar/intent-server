@@ -102,6 +102,7 @@ build/agentic-nondeterminism.tex: build/agentic-nondeterminism.xml $(LATEX_TEMPL
 	@if command -v pandoc >/dev/null 2>&1; then \
 		pandoc build/agentic-nondeterminism.xml -f docbook -t latex --template=$(LATEX_TEMPLATE) --resource-path=$(agentic-nondeterminism_RESOURCE_PATH) $(agentic-nondeterminism_PANDOC_FLAGS) -o $@; \
 		agentic-nondeterminism/fix_cites.py $@; \
+		agentic-nondeterminism/strip_embedded_references.py $@; \
 	else \
 		echo "pandoc not installed; cannot generate $@"; exit 1; \
 	fi

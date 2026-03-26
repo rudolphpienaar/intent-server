@@ -1,3 +1,5 @@
+:stem: latexmath
+
 == Experiment: ChRIS IAS vs Agentic Orchestration
 
 This document consolidates the experimental design and setup for evaluating the paper’s claims on a real system (ChRIS). The goal is to show, empirically, that deterministic orchestration (IAS) collapses the action space while agentic orchestration over the same tool graph carries irreducible, measurable risk.

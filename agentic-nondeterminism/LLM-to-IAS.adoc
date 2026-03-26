@@ -1,13 +1,13 @@
 = Reasoning, LLMs, and Agentic Programs: Agents Will Always Lie, So Clinical Truth Must Live Outside the Model
 Author: Rudolph Pienaar
 :doctype: article
-:stem:
+:stem: latexmath
 
 == Abstract
 
-Modern AI is not magic; it is mathematics. This paper uses that lens to formalize a key insight with two self-evident “axioms" that expose a dangerous fallacy, a theorem that proves it, and a consequence that points to a remedy. First (Axiom 1), modern AI systems rest on neural networks that, in their classical predictive role, are deterministic: for fixed parameters and an input, the forward pass always produces the same output. These networks act as compressive maps from high-dimensional inputs onto lower-dimensional manifolds of internal representations. Second (Axiom 2), generative AI uses essentially the same machinery in reverse spirit. Instead of compressing data into embeddings and predicting labels, we ask models to produce text, images, or code from context. Mathematically, this reverse direction cannot be a true inverse, because the forward map is many-to-one and not invertible; there is no single input to recover. The only meaningful way back is probabilistic, by learning a conditional distribution over the many inputs compatible with a representation and sampling from it. Probability is therefore not an optional detail on top of otherwise deterministic networks; it is intrinsic to the generative step. The fallacy is to take this inherently probabilistic generator and put it in charge of assembling workflows, selecting tools, and orchestrating multi-step procedures, including in clinical settings, without appreciating the mathematical limits that follow. The very machinery that enables generation also poisons non-trivial, safety-critical workflows: strict correctness, reproducibility, and auditability are at odds with a sampler that must explore a large space of possibilities.
+Modern AI is not magic; it is mathematics. This paper uses that lens to formalize a key insight with two self-evident “axioms" that expose a dangerous fallacy, a theorem that proves it, and a consequence that points to a remedy. First (Axiom 1), modern AI systems rest on neural networks that, in their classical predictive role, are deterministic: for fixed parameters and an input, the forward pass always produces the same output. These networks act as compressive maps from high-dimensional inputs onto lower-dimensional manifolds of internal representations. Second (Axiom 2), generative AI uses essentially the same machinery in reverse spirit. Instead of compressing data into embeddings and predicting labels, these systems mechanically generate text, images, or code from context. Mathematically, this reverse direction cannot be a true inverse, because the forward map is many-to-one and not invertible; there is no single input to recover. The only meaningful way back is probabilistic, through parameterization of a conditional distribution over the many inputs compatible with a representation and sampling from it. Probability is therefore not an optional detail on top of otherwise deterministic networks; it is intrinsic to the generative step. The fallacy is to place this inherently probabilistic generator in charge of workflow assembly, tool selection, and multi-step orchestration, including in clinical settings, without appreciating the mathematical limits that follow. The very machinery that enables generation also makes non-trivial, safety-critical workflows structurally unsafe: strict correctness, reproducibility, and auditability are at odds with a sampler operating over a large space of possibilities.
 
-Theorem (non-zero orchestration risk): once a probabilistic policy is responsible for exploring a large space of possible action sequences that contains both valid and invalid workflows, the probability of selecting an invalid workflow cannot be driven to zero without removing the agent’s freedom to assemble workflows. I make this precise by modeling tools as nodes in a directed graph, workflows as paths, and an agent as a probability distribution over those paths. Under mild assumptions, any non-trivial agentic policy over this graph has non-zero mass on clinically invalid paths; as workflows grow longer and tools more numerous, the probability of at least one unacceptable orchestration choice increases rather than decreases. In this sense, such systems will always “lie” in the sense that matters in clinical contexts: they will inevitably produce procedurally incorrect or unsafe workflows with non-zero probability. Over roughly the last year, however, vendors and research groups have begun to promote increasingly agentic systems for healthcare and other high-stakes domains, often presenting tool-using agents as a natural next step beyond traditional programming and clinical decision support. Many scientists and engineers who are not steeped in the details of generative modeling accept these proposals at face value or propose agentic systems of their own. The growing enthusiasm for ever more agentic systems is therefore not just philosophically troubling; it is a concrete safety concern to the extent that it ignores this structural constraint.
+Theorem (non-zero orchestration risk): once a probabilistic policy is responsible for exploring a large space of possible action sequences that contains both valid and invalid workflows, the probability of selecting an invalid workflow cannot be driven to zero without eliminating runtime freedom in workflow assembly. I make this precise by modeling tools as nodes in a directed graph, workflows as paths, and an agent as a probability distribution over those paths. Under mild assumptions, any non-trivial agentic policy over this graph has non-zero mass on clinically invalid paths; as workflows grow longer and tools more numerous, the probability of at least one unacceptable orchestration choice increases rather than decreases. In this sense, such systems will always “lie” in the sense that matters in clinical contexts: they will inevitably produce procedurally incorrect or unsafe workflows with non-zero probability. Over roughly the last year, however, vendors and research groups have begun to promote increasingly agentic systems for healthcare and other high-stakes domains, often presenting tool-using agents as a natural next step beyond traditional programming and clinical decision support. Many scientists and engineers who are not steeped in the details of generative modeling accept these proposals at face value or propose agentic systems of their own. The growing enthusiasm for ever more agentic systems is therefore not just philosophically troubling; it is a concrete safety concern to the extent that it ignores this structural constraint.
 
 Consequence (architectural remedy): if one accepts this mathematical constraint, the way to avoid orchestration hallucination is not to demand more elaborate reasoning traces from the agent, but to take generative models out of the orchestration loop. Execution must be restricted to a set of prevalidated, deterministic workflows, and large language models must be used only as translators from human needs and clinical narratives to formal intents that select among those workflows. I describe an Intent–Action Service that compiles each intent to a single canonical workflow, collapsing the combinatorial action space to one path per intent and localizing residual uncertainty to the interpretation of user intent rather than to the construction of procedures. I argue that for clinical and other safety-critical domains, this separation between probabilistic interpretation and deterministic execution is not merely advisable but required.
 
@@ -17,7 +17,7 @@ My motivation in writing this paper is straightforward: to make explicit, with s
 
 ``Lies, damned lies, and statistics"footnote:[Often attributed to Mark Twain, possibly originally Benjamin Disraeli.] is a reminder that numbers can be made to serve any story. If statistics can bend, so can its sibling: probability. It lets us say, “the truth is out there, somewhere in this cloud,” when pinning a single point is hard or impossible. Probability was supposed to help us grapple with complex, subsampled phenomena. A 95% chance of rain tomorrow was never meant to mean it _will_ rain. Many seem to forget that probability is the engine in every computational atom of generative AI, dazzling with an appearance of determinism. Sometimes that “good enough” shine hides unacceptable risk, especially in systems that touch human health and well-being. If a self-driving car crashes 1% of the time, the argument that it's definitely correct the other 99% of the time is small comfort.
 
-In 1980 Searle argued in his seminal ``Minds, Brain, and Programs" paper against the late‑1970s idea that a suitably programmed computer (what he called "strong AI") would literally have a mind or reveal how human minds work pass:[\cite{searle1980}]. His point was that mere manipulation of symbols according to rules (_syntax_) is not the same as grasping their meaning (_semantics_). Anthropomorphism dazzles, and shortcuts that produce good answers can seduce us into ascribing understanding where there is none. Almost half a century later we have generative AI systems that are still syntactic engines, now implemented as probabilistic pattern machines in silicon. They move probability mass over a space of token sequences but do not, by themselves, come any closer to meaning or to _truth_. The probability machinery that powers the generative step also complicates determinism and reproducibility compared with Searle’s idealized lookup tables, yet it does not weaken his thesis; if anything, the probabilistic twist makes these machines less suitable in contexts where human well‑being is at stake. Certain voices nevertheless argue that such systems can be chained together to construct analyses in any context, including medical ones. But just because their outputs _seem_ correct, or are highly probable under the model, does not mean they _are_ correct in the sense that matters for patients. The appearance of correctness tells us nothing about the underlying, reproducible, deterministic truth we actually need.
+In 1980 Searle argued in his seminal ``Minds, Brain, and Programs" paper against the late‑1970s idea that a suitably programmed computer (what he called "strong AI") would literally have a mind or reveal how human minds work pass:[\cite{searle1980}]. His point was that mere manipulation of symbols according to rules (_syntax_) is not the same as grasping their meaning (_semantics_). Anthropomorphism dazzles, and shortcuts that produce good answers can fool us into ascribing understanding where there is none. Almost half a century later we have generative AI systems that are still syntactic engines, now implemented as probabilistic pattern machines in silicon. They move probability mass over a space of token sequences but do not, by themselves, come any closer to meaning or to _truth_. The probability machinery that powers the generative step also complicates determinism and reproducibility compared with Searle’s idealized lookup tables, yet it does not weaken his thesis; if anything, the probabilistic twist makes these machines less suitable in contexts where human well‑being is at stake. Certain voices nevertheless argue that such systems can be chained together to construct analyses in any context, including medical ones. But just because their outputs _seem_ correct, or are highly probable under the model, does not mean they _are_ correct in the sense that matters for patients. The appearance of correctness tells us nothing about the underlying, reproducible, deterministic truth we actually need.
 
 Like Searle responded to ideas of AI in his time, I too in this paper want to refute what warns to become a similarly entrenched, strangely unchallenged claim in today’s discourse: that agentic computation, using LLMs not merely to emit text but to assemble programs and orchestrate complex analyses on the fly, is a sound and sensible use of the technology. Where Searle, the consummate philosopher, leaned on a ``Chinese room" Gedankenexperiment, I will lean on simple mathematics, as befits my academic roots in engineering and physical sciences.
 
@@ -27,63 +27,88 @@ Agentic generative AI has rapidly moved from a research curiosity to an asserted
 
 Over roughly the past year this trajectory has accelerated. Vendor roadmaps, technical blogs, and conference talks now routinely present tool-using agents as the natural next step after classical programming and static clinical decision support, and pilot systems are described as if agentic orchestration were an obviously reasonable evolution rather than a substantive change in risk profile. Many scientists and engineers who are not steeped in the details of generative modeling accept these claims, or propose agentic workflows of their own, without fully grappling with the probabilistic limits just described.
 
-A common claim in this space is that hallucination can be controlled by forcing agents to “show their work.” If the agent is required to output explicit reasoning chains, code, or deterministic-looking programs, and if it operates over a sufficiently rich evidence space, then the hope is that errors become rare and easily detectable pass:[\cite{xu2024impossible,chen2023pal,openai2024mitigating}]. This narrative is appealing, particularly to non-technical audiences; it suggests that transparency of steps naturally leads to correctness.
+A common claim in this space is that hallucination can be controlled by forcing explicit intermediate outputs. If the system is required to emit reasoning chains, code, or deterministic-looking programs, and if it operates over a sufficiently rich evidence space, then the hope is that errors become rare and easily detectable pass:[\cite{xu2024impossible,chen2023pal,openai2024mitigating}]. This narrative is appealing, particularly to non-technical audiences; it suggests that transparency of steps naturally leads to correctness.
 
-This paper argues that this view is fundamentally mistaken. Hallucination is not a superficial defect of generative models that can be removed through better prompting or insistence on explicit steps. It is a structural property of probabilistic systems navigating a very large space of possible action sequences pass:[\cite{vaswani2017,ji2023survey,maynez2020faithfulness}]. When agents are given more tools and asked to reason in more steps, hallucination risk is not mitigated; it is amplified.
+This paper argues that this view is fundamentally mistaken. Hallucination is not a superficial defect of generative models that can be removed through better prompting or insistence on explicit steps. It is a structural property of probabilistic systems operating over a very large space of possible action sequences pass:[\cite{vaswani2017,ji2023survey,maynez2020faithfulness}]. When the number of exposed tools increases and the number of generated reasoning steps grows, hallucination risk is not mitigated; it is amplified.
 
-To make this precise, we develop a graph-theoretic formulation of the action space available to an agent. We show that the number of possible workflows grows combinatorially with the number of tools and the length of the procedure, and that any probabilistic policy over this space has a non-zero probability of selecting an invalid workflow. Requiring more detailed reasoning only increases the number of opportunities for deviation. It is no small irony that the very attempt to use the system's own internals to improve its outputs, only makes them more suspect, not less.
+To make this precise, we develop a graph-theoretic formulation of the action space available to an agent. We show that the number of possible workflows grows combinatorially with the number of tools and the length of the procedure, and that any probabilistic policy over this space has a non-zero probability of selecting an invalid workflow. Requiring more detailed reasoning only increases the number of opportunities for deviation. It is no small irony that the attempt to expose more of the system’s internally generated structure, as a means of improving reliability, only makes the outputs more suspect, not less.
 
-We then introduce the concept of an Intent–Action Service (IAS). IAS is a deterministic compiler from high-level clinical intents to canonical workflows. Instead of exploring the action graph at runtime, the system maps each intent to a single, prevalidated path through the tool graph. From the agent’s perspective, the immense procedural space has been collapsed to a single macro-action per intent. This separation of generative interpretation from deterministic execution provides a way to localize hallucination and to bound where it can affect clinical systems.
+We then introduce the concept of an Intent–Action Service (IAS). IAS is a deterministic compiler from high-level clinical intents to canonical workflows. Instead of exploring the action graph at runtime, the system maps each intent to a single, prevalidated path through the tool graph. Under this construction, the immense procedural space is collapsed to a single macro-action per intent. This separation of generative interpretation from deterministic execution provides a way to localize hallucination and to bound where it can affect clinical systems.
 
 The remainder of this paper develops the theoretical formulation, contrasts agentic and IAS-based architectures, and outlines an experimental design to evaluate their behavior in a controlled imaging environment.
 
 == Why Generative Models Are Probabilistic
 
-Neural networks with fixed parameters implement deterministic forward maps, but generative use requires them to parameterize and sample from distributions rather than invert those maps.
+=== The Deterministic Underpinning
 
-Let stem:[f_{\theta} : \mathbb{R}^d \to \mathbb{R}^k] be a trained encoder or decoder block pass:[\cite{vaswani2017,bishop2006}]. Typically stem:[k \ll d], so many different inputs collapse to the same or nearby representations. For a given representation stem:[z], the preimage
+The core computational objects underlying modern generative AI are artificial neural networks. Historically, these constructions were loosely inspired by simplified early abstractions of biological neurons pass:[\cite{mcculloch1943}]footnote:[There is a striking historical inversion here. The original McCulloch-Pitts construction was introduced as a simplification of nervous activity, not as a biologically faithful model of neural tissue. Modern neural networks are vastly more elaborate, but elaboration is not ontological revision. The basic object remains a fully tractable mathematical surrogate. Nevertheless, contemporary discourse often treats scale and benchmark performance as if they had converted the abstraction into the thing abstracted, and sometimes as if that abstraction could surpass its biological referent on that basis alone. No empirical result or theoretical argument currently licenses that conclusion. Performance gains do not, by themselves, justify a metaphysical promotion.], but in modern machine learning they are best understood as parameterized mathematical maps composed of affine transformations and nonlinearities. Their role in this paper is not biological analogy but mathematical structure: with fixed parameters, a neural network implements a deterministic forward transformation from one vector space to another. In many practically relevant settings, this forward map is effectively compressive on the data distribution: a high-dimensional input is sent to a more compact representation, and the image of the data under that map often concentrates on a lower-dimensional manifold or structured subset of representation space.
 
-[stem]
-++++
-\mathcal{P}(z) = \{ x \in \mathbb{R}^d \mid f_{\theta}(x) = z \}
-++++
+.Generic neural network diagram. For the present argument, the essential feature is that the forward pass is explicit and deterministic once the parameters are fixed.
+image::assets/images/neural-network.svg[Neural network block diagram,align=center,width=85%]
 
-is large for a typical stem:[z]. There is no unique inverse stem:[f_{\theta}^{-1}(z)]; instead there is an equivalence class of inputs consistent with stem:[z].
+This deterministic and often effectively compressive forward map naturally raises the inverse question: can one move back from the compressed representation to an original input consistent with it? Generative modeling is one answer to that question. But because the forward map is generally many-to-one on the data distribution, generation does not invert the network uniquely; it parameterizes a conditional distribution over admissible outputs and samples from that distribution.
 
-Generative models therefore learn a conditional distribution stem:[p_{\theta}(x \mid c)] over this class given a context stem:[c] (prompt, conditioning, previous tokens) pass:[\cite{brown2020,vaswani2017,kingma2013vae}]. The forward pass computes the parameters of stem:[p_{\theta}], and sampling draws one member of the class:
+=== The Probabilistic Inverse
 
-[stem]
-++++
-x \sim p_{\theta}(x \mid c).
-++++
-
-Any decoding rule, whether stochastic (temperature/top-k/top-p) or even greedy argmax, chooses an element from a set of admissible completions rather than inverting stem:[f_{\theta}] to a single input. Determinism would require collapsing stem:[p_{\theta}] to a single mode, which sacrifices coverage and fidelity. Because the mapping from inputs to representations is many-to-one and decoding selects from a distribution over that set, generation is inherently probabilistic.
-
-== Why Generative AI Must Be Probabilistic, and Why Full Inversion Is Undesirable
-
-Generation can be viewed as solving an inverse problem on a compressed manifold. Let stem:[g(x)] denote the forward map of a predictive network (tokenization, encoder, classifier). The map stem:[g] is many-to-one: vast regions of input space collapse to similar representations. Given a prompt or target representation stem:[z_c = g(c)], the set of compatible outputs is
+Let stem:[g : \mathbb{R}^d \to \mathbb{R}^k] denote the deterministic forward map of a network, so that
 
 [stem]
 ++++
-\mathcal{S}(c) = \{\, x \mid g(x) \approx z_c \,\} .
+z = g(x) .
 ++++
 
-The model learns a conditional distribution stem:[p_{\theta}(x \mid c)] supported on stem:[\mathcal{S}(c)]. Sampling selects one element from this large equivalence class. Deterministic generation would require picking a single point in stem:[\mathcal{S}(c)] for every stem:[c], discarding the inherent ambiguity of language and clinical descriptions.
-
-Within stem:[\mathcal{S}(c)], only a small observer-validated subset stem:[\mathcal{G}(c) \subset \mathcal{S}(c)] corresponds to clinically acceptable outputs. The model’s “correctness” for stem:[c] is
+This naturally suggests the inverse question of whether one can move back from stem:[z] to stem:[x] by an inverse map stem:[g^{-1}], i.e.
 
 [stem]
 ++++
-P_{\text{correct}}(c) = \int_{x \in \mathcal{G}(c)} p_{\theta}(x \mid c)\, dx ,
+x = g^{-1}(z) .
 ++++
 
-and stem:[1 - P_{\text{correct}}(c)] is the mass on outputs that are probabilistically plausible but clinically wrong. Because stem:[g] is many-to-one, stem:[\mathcal{S}(c)] is large; shrinking stem:[P_{\text{correct}}(c)] to 1 by deterministically collapsing stem:[p_{\theta}] would destroy diversity and often select the wrong mode.
+In general, however, such an inverse is not available. The forward map is many-to-one on the data distribution, so distinct inputs can map to the same or nearby representations. For a given representation stem:[z], the preimage
 
-Full inversion of stem:[g] is neither possible nor desirable. Enforcing bijectivity would eliminate compression, preserve noise, and force the model to memorize rather than generalize. Formally, one would need a square, invertible map stem:[g: \mathbb{R}^n \to \mathbb{R}^n] with an invertible nonlinearity at every layer. This collapses generative modeling to a degenerate edge case: a reversible lookup that cannot reduce dimension, cannot discard nuisance variation, and cannot extrapolate beyond its training support. Invertible flow families (e.g., NICE/Real NVP/Glow) explore this corner of the space but still rely on sampling and do not solve semantic correctness pass:[\cite{dinh2017realnvp,kingma2018glow}]. Two distinct patients with the same diagnosis would “invert” to the same image; a deterministic inverse would be clinically misleading. The meaningful inverse is probabilistic: stem:[p(x \mid y, W)] expresses a distribution of inputs consistent with an output, not a single reconstruction. This is precisely what generative models implement by sampling.
+[stem]
+++++
+\mathcal{P}(z) = \{ x \in \mathbb{R}^d \mid g(x) = z \}
+++++
 
-By contrast, practical architectures are deliberately non-square at key layers: encoders reduce stem:[n \to k] with stem:[k \ll n], and even decoder blocks introduce rank-deficient projections (e.g., attention projections of size stem:[d_{\text{model}} \times d_k], embedding tables with fewer rows than token combinations). These maps are not invertible by construction; any “inverse” must operate over a preimage set. Forcing square, invertible Jacobians everywhere would explode parameter counts, prevent dimensionality reduction, and still not resolve the many-to-one mapping of semantic content to representations.
+is large for a typical stem:[z]. There is therefore no unique antecedent to recover. The only meaningful reverse object is not a function stem:[g^{-1}(z)] but a conditional distribution over the compatible preimage set. Generative modeling is the mechanical process of parameterizing such a conditional distribution, written here as stem:[p_{\theta}(x \mid z)] pass:[\cite{brown2020,vaswani2017,kingma2013vae}]. Sampling then draws one member of the class:
 
-Therefore, hallucination risk is structural: the mapping from prompts to admissible outputs is underdetermined, and only a subset of that space is clinically valid. Probabilistic sampling is inherent; determinism belongs in orchestration (IAS), not in the generative core.
+[stem]
+++++
+x \sim p_{\theta}(x \mid z).
+++++
+
+Any decoding rule, whether stochastic (temperature/top-k/top-p) or even greedy argmax, chooses an element from the compatible set rather than inverting stem:[g] to a single input. Determinism would require collapsing stem:[p_{\theta}(x \mid z)] to a single point, which sacrifices coverage and fidelity. Because the mapping stem:[x \mapsto z] is many-to-one, the reverse direction is inherently probabilistic.
+
+== Why Exact Inversion Does Not Rescue Correctness
+
+The argument above establishes why the generative step is probabilistic. But even if one sets that point aside and asks whether exact inversion would solve the correctness problem, the answer is still no. The issue is not merely that a representation stem:[z] admits many compatible antecedents. It is also that only a small subset of those antecedents are semantically, clinically, or procedurally acceptable.
+
+For a given representation stem:[z], define the compatible preimage set
+
+[stem]
+++++
+\mathcal{S}(z) = \{\, x \mid g(x) \approx z \,\} .
+++++
+
+This is the approximate counterpart of stem:[\mathcal{P}(z)], relaxing exact equality to neighborhood-level compatibility in representation space.
+
+A parameterized model defines a conditional distribution stem:[p_{\theta}(x \mid z)] supported on stem:[\mathcal{S}(z)]. Within stem:[\mathcal{S}(z)], only a small observer-validated subset stem:[\mathcal{G}(z) \subset \mathcal{S}(z)] corresponds to clinically acceptable outputs.
+
+The probability mass assigned to clinically acceptable outputs for stem:[z] is
+
+[stem]
+++++
+P_{\text{correct}}(z) = \int_{x \in \mathcal{G}(z)} p_{\theta}(x \mid z)\, dx ,
+++++
+
+and stem:[1 - P_{\text{correct}}(z)] is the mass on antecedents that are mathematically admissible or probabilistically plausible but clinically wrong. This point is logically independent of the inverse problem itself: even a deterministic selection rule over stem:[\mathcal{S}(z)] would not guarantee that the selected element lies in stem:[\mathcal{G}(z)].
+
+Full inversion of stem:[g] would not rescue correctness either. Enforcing bijectivity would eliminate compression, preserve noise, and force the model toward a degenerate edge case: a reversible lookup that cannot reduce dimension, cannot discard nuisance variation, and cannot extrapolate beyond its training support. Invertible flow families (e.g., NICE/Real NVP/Glow) explore this corner of the space but still rely on sampling and do not solve semantic correctness pass:[\cite{dinh2017realnvp,kingma2018glow}]. Two distinct patients with the same diagnosis would not map to a single clinically meaningful reconstruction; a deterministic inverse would therefore be misleading even if it were mathematically available.
+
+By contrast, practical architectures are deliberately non-square at key layers: encoders reduce stem:[n \to k] with stem:[k \ll n], and even decoder blocks introduce rank-deficient projections (e.g., attention projections of size stem:[d_{\text{model}} \times d_k], embedding tables with fewer rows than token combinations). These maps are not invertible by construction, and any inverse-like operation must therefore operate over a preimage set rather than a single exact antecedent.
+
+Therefore, hallucination risk is structural at two levels: the mapping from prompts to outputs is underdetermined, and only a subset of the admissible output space is clinically valid. Probabilistic sampling is inherent, but even hypothetical exact inversion would not restore correctness. Determinism belongs in orchestration (IAS), not in the generative core.
 
 == Theoretical Formulation of the Action Space
 
@@ -133,7 +158,7 @@ H_{MCP}(i)
 = 1 - \sum_{s \in \mathcal{S}_{valid}} \pi_{MCP}(s \mid i) .
 ++++
 
-Unless stem:[\pi_{MCP}(\cdot \mid i)] has support only on stem:[\mathcal{S}_{valid}], we have stem:[H_{MCP}(i) > 0]. In practice, stem:[\mathcal{S}_{invalid}] is combinatorially enormous, and there is no realistic mechanism for constraining the support of stem:[\pi_{MCP}] to stem:[\mathcal{S}_{valid}] without removing the agent’s freedom to assemble workflows.
+Unless stem:[\pi_{MCP}(\cdot \mid i)] has support only on stem:[\mathcal{S}_{valid}], we have stem:[H_{MCP}(i) > 0]. In practice, stem:[\mathcal{S}_{invalid}] is combinatorially enormous, and there is no realistic mechanism for constraining the support of stem:[\pi_{MCP}] to stem:[\mathcal{S}_{valid}] without eliminating runtime freedom in workflow assembly.
 
 This formulation makes transparent that hallucination is not a rare exception. It is the generic behavior of any probabilistic policy operating over a large space that contains both valid and invalid elements.
 
@@ -146,7 +171,7 @@ The size of stem:[\mathcal{S}(G)] is a direct driver of hallucination risk. For 
 |\mathcal{S}_L(G)| \approx d^L .
 ++++
 
-Even if the clinically valid subset stem:[\mathcal{S}_{valid,L} \subset \mathcal{S}_L(G)] is small, the agent’s policy stem:[\pi_{MCP}] must navigate a space whose size grows exponentially in stem:[L]. If we think of a per-step mis-selection probability stem:[\varepsilon > 0], representing the chance of choosing a wrong tool, an incorrect transition, or forgetting a mandatory step at each decision point, then the probability that a length-stem:[L] workflow is fully correct is crudely approximated by
+Even if the clinically valid subset stem:[\mathcal{S}_{valid,L} \subset \mathcal{S}_L(G)] is small, the agent’s policy stem:[\pi_{MCP}] must operate over a space whose size grows exponentially in stem:[L]. If we think of a per-step mis-selection probability stem:[\varepsilon > 0], representing the chance of an incorrect tool assignment, an invalid transition, or omission of a mandatory step at each decision point, then the probability that a length-stem:[L] workflow is fully correct is crudely approximated by
 
 [stem]
 ++++
@@ -263,7 +288,7 @@ F(i) = s_i ,
 
 with stem:[s_i \in \mathcal{S}_{valid}] for each intent stem:[i]. The mapping stem:[F] is implemented by domain experts and verified separately from any generative model.
 
-From the agent’s perspective, the action space is reduced to selecting an intent and invoking IAS with that intent. The effective policy over workflows becomes
+Under IAS, the action space is reduced to intent specification followed by IAS invocation. The effective policy over workflows becomes
 
 [stem]
 ++++
@@ -310,9 +335,9 @@ If, in addition, the system is used repeatedly or workflows can grow in length s
 
 == Agentic Reasoning and the Limits of “Showing the Steps”
 
-With this formalization in hand, it becomes easier to articulate why simply forcing agents to reveal their reasoning does not solve the problem of hallucination. When an LLM agent is asked to produce explicit chains of thought, code, or tool invocations, it is still sampling from a distribution over sequences. Each additional line of reasoning or program fragment is another term in a sequence akin to stem:[s = (v_1, \dots, v_L)], only now the “tools” are abstract operations in a symbolic reasoning trace.
+With this formalization in hand, it becomes easier to articulate why simply forcing explicit intermediate reasoning traces does not solve the problem of hallucination. When an LLM system emits chains of thought, code, or tool invocations, it is still sampling from a distribution over sequences. Each additional line of reasoning or program fragment is another term in a sequence akin to stem:[s = (v_1, \dots, v_L)], only now the “tools” are abstract operations in a symbolic reasoning trace.
 
-Even when the agent’s code is syntactically valid and apparently deterministic, its semantics may be incorrect. It may call the wrong tools, apply the wrong thresholds, or base decisions on misread or mis-retrieved evidence. None of this is prevented by transparency.
+Even when the emitted code is syntactically valid and apparently deterministic, its semantics may be incorrect. It may invoke the wrong tools, apply the wrong thresholds, or depend on incorrectly retrieved or incorrectly parsed evidence. None of this is prevented by transparency.
 
 The theoretical picture remains the same: the agent’s policy stem:[\pi] has non-zero mass on invalid elements, and the space of elements increases with the length of the reasoning chain. Asking the model to be more explicit does not change the underlying combinatorics; it simply exposes more of the generative process.
 
@@ -320,7 +345,7 @@ In safety-critical domains such as clinical imaging, this is not sufficient. A h
 
 == IAS and LLMs as Points on a Spectrum
 
-The contrast between MCP+agent and IAS is not purely dichotomous. It is helpful to think of a spectrum along which systems can be placed. At one end, there is a fully agentic configuration in which the LLM controls the selection and ordering of primitives, with minimal structural constraints. At the other, there is a configuration in which the LLM merely selects from a discrete set of high-level intents, each deterministically compiled into a workflow.
+The contrast between MCP+agent and IAS is not purely dichotomous. It is helpful to think of a spectrum along which systems can be placed. At one end, there is a fully agentic configuration in which the LLM determines the selection and ordering of primitives, with minimal structural constraints. At the other, there is a configuration in which the LLM maps inputs to a discrete set of high-level intents, each deterministically compiled into a workflow.
 
 Most real systems may fall somewhere between these extremes. They may expose a small number of macro-tools in addition to primitives, or allow a limited set of decisions within a largely deterministic pipeline. The key observation from the theoretical model is that the more of the action space is pre-collapsed into deterministic mappings like stem:[F], the smaller the region in which hallucinations can operate.
 
@@ -330,9 +355,9 @@ For clinical applications, the argument made here is that systems must be design
 
 The theoretical arguments suggest that agentic orchestration and IAS-based orchestration will behave very differently in practice, particularly in terms of reproducibility and safety. These differences can be tested in a controlled experimental setting.
 
-One can construct a testbed based on an imaging platform where the underlying tools and workflows are well understood. In the agentic condition, the LLM is given access to primitive imaging operations through a tool registry and is asked to construct workflows corresponding to clinical intents, for example segmenting a lesion, performing quality control, and exporting results. The system logs the sequence of tool calls, their parameters, and any errors encountered. By repeating the same intent multiple times, one can measure how frequently the agent produces different workflows for the same request, how often it omits required steps, and how often it attempts invalid combinations of tools.
+One can construct a testbed based on an imaging platform where the underlying tools and workflows are well understood. In the agentic condition, the LLM is given access to primitive imaging operations through a tool registry, and workflow specifications corresponding to clinical intents are generated, for example for lesion segmentation, quality control, and result export. The system logs the sequence of tool calls, their parameters, and any errors encountered. By repeating the same intent multiple times, one can measure how frequently the system yields different workflows for the same request, how often required steps are omitted, and how often invalid combinations of tools are attempted.
 
-In the IAS condition, the same LLM receives only one available action at the tool level: the ability to invoke the IAS with a specified intent. The IAS then constructs and executes the workflow deterministically. Repeated trials under this condition should produce identical workflows and, assuming correct IAS specification, no invalid sequences. The only variability should appear in how the LLM phrases the intent or chooses among a small set of available intents, not in the structure of the workflows themselves.
+In the IAS condition, the same LLM receives only one available action at the tool level: the ability to invoke the IAS with a specified intent. The IAS then constructs and executes the workflow deterministically. Repeated trials under this condition should produce identical workflows and, assuming correct IAS specification, no invalid sequences. The only variability should appear in how the LLM renders the intent or maps an input into a small set of available intents, not in the structure of the workflows themselves.
 
 A secondary dimension of the experiment can involve human evaluation. Clinicians or domain experts can be presented with the workflows produced under each condition, without knowing how they were generated, and asked to assess their plausibility, completeness, and safety. If the theory is correct, IAS-generated workflows should be more consistent, more auditable, and easier to trust.
 
@@ -344,7 +369,7 @@ The Intent–Action Service pattern offers a complementary perspective. It ackno
 
 It is important to be explicit about the limitations of this approach. IAS does not guarantee correctness of the workflows themselves; that remains the responsibility of clinical governance and software verification. Nor does it prevent misinterpretation of user intents. However, it draws a clear boundary: if an error occurs in execution, it is attributable to a deterministic component. This makes the system amenable to traditional forms of testing, certification, and regulation.
 
-This suggests an MCP–IAS spectrum. At the fully agentic end, LLMs discover and order primitive tools exposed via MCP, with maximal flexibility and maximal action-space risk. In the middle, MCP exposes coarser “macro-tools” that encapsulate validated sub-workflows, reducing branching but leaving some orchestration to the model. At the deterministic end, the LLM selects only intents and passes them to IAS, which compiles to a single canonical workflow per intent. Movement along this spectrum trades agentic freedom for reproducibility and auditability; the argument here is that safety-critical clinical systems should reside near the IAS end. Formal verification work (e.g., Reluplex, AI2 abstract interpretation) shows how hard it is to certify arbitrary neural policies at scale \cite{katz2017reluplex,gehr2018ai2}; collapsing orchestration into deterministic pipelines is a more tractable safety surface.
+This suggests an MCP–IAS spectrum. At the fully agentic end, LLM outputs determine the discovery and ordering of primitive tools exposed via MCP, with maximal flexibility and maximal action-space risk. In the middle, MCP exposes coarser “macro-tools” that encapsulate validated sub-workflows, reducing branching but leaving some orchestration to the model. At the deterministic end, the LLM maps inputs to intents and passes them to IAS, which compiles to a single canonical workflow per intent. Movement along this spectrum trades runtime flexibility for reproducibility and auditability; the argument here is that safety-critical clinical systems should reside near the IAS end. Formal verification work (e.g., Reluplex, AI2 abstract interpretation) shows how hard it is to certify arbitrary neural policies at scale \cite{katz2017reluplex,gehr2018ai2}; collapsing orchestration into deterministic pipelines is a more tractable safety surface.
 
 Retrieval-augmented systems such as Openevidence sit in this middle region. By conditioning generation on cited literature, they shrink the semantic space and improve auditability, but they do not eliminate probabilistic failure modes \cite{xu2024impossible,smith2025agentic}. Citation mismatch (a true citation that does not support the generated claim) and unsupported synthesis remain common RAG errors \cite{smith2025agentic,liu2024faithfulness}. In orchestration terms, retrieval constrains content selection but leaves the sequence of tool calls (retrieve, filter, rank, summarize) under a probabilistic policy. IAS addresses a different layer: once an intent is selected, the workflow is deterministic. Openevidence-style RAG can complement IAS for evidence retrieval, but it does not obviate the need to collapse procedural action graphs.
 

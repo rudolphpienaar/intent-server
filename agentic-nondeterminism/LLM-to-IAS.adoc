@@ -5,7 +5,7 @@ Author: Rudolph Pienaar
 
 == Abstract
 
-Modern AI is not magic; it is mathematics. This paper uses that lens to formalize a key insight with two self-evident “axioms" that expose a dangerous fallacy, a theorem that proves it, and a consequence that points to a remedy. First (Axiom 1), modern AI systems rest on neural networks that, in their classical predictive role, are deterministic: for fixed parameters and an input, the forward pass always produces the same output. These networks act as compressive maps from high-dimensional inputs onto lower-dimensional manifolds of internal representations. Second (Axiom 2), generative AI uses essentially the same machinery in reverse spirit. Instead of compressing data into embeddings and predicting labels, these systems mechanically generate text, images, or code from context. Mathematically, this reverse direction cannot be a true inverse, because the forward map is many-to-one and not invertible; there is no single input to recover. The only meaningful way back is probabilistic, through parameterization of a conditional distribution over the many inputs compatible with a representation and sampling from it. Probability is therefore not an optional detail on top of otherwise deterministic networks; it is intrinsic to the generative step. The fallacy is to place this inherently probabilistic generator in charge of workflow assembly, tool selection, and multi-step orchestration, including in clinical settings, without appreciating the mathematical limits that follow. The very machinery that enables generation also makes non-trivial, safety-critical workflows structurally unsafe: strict correctness, reproducibility, and auditability are at odds with a sampler operating over a large space of possibilities.
+Modern AI is not magic; it is mathematics. This paper uses that lens to formalize a key insight with two self-evident “axioms" that expose a dangerous fallacy, a theorem that proves it, and a consequence that points to a remedy. First (Axiom 1), modern AI systems rest on neural networks that, in their classical predictive role, are deterministic: for fixed parameters and an input, the forward pass always produces the same output. These networks act as compressive maps from high-dimensional inputs onto lower-dimensional manifolds of internal representations. Second (Axiom 2), generative AI uses essentially the same machinery in reverse spirit. Instead of compressing data into embeddings and predicting labels, these systems mechanically generate text, images, or code from context. Mathematically, this reverse direction cannot in general be a true inverse, because the forward map is typically compressive and therefore non-injective on the data distribution; there is no unique input to recover. The only meaningful way back is probabilistic, through parameterization of a conditional distribution over the many inputs compatible with a representation and sampling from it. Probability is therefore not an optional detail on top of otherwise deterministic networks; it is intrinsic to the generative step. The fallacy is to place this inherently probabilistic generator in charge of workflow assembly, tool selection, and multi-step orchestration, including in clinical settings, without appreciating the mathematical limits that follow. The very machinery that enables generation also makes non-trivial, safety-critical workflows structurally unsafe: strict correctness, reproducibility, and auditability are at odds with a sampler operating over a large space of possibilities.
 
 Theorem (non-zero orchestration risk): once a probabilistic policy is responsible for exploring a large space of possible action sequences that contains both valid and invalid workflows, the probability of selecting an invalid workflow cannot be driven to zero without eliminating runtime freedom in workflow assembly. I make this precise by modeling tools as nodes in a directed graph, workflows as paths, and an agent as a probability distribution over those paths. Under mild assumptions, any non-trivial agentic policy over this graph has non-zero mass on clinically invalid paths; as workflows grow longer and tools more numerous, the probability of at least one unacceptable orchestration choice increases rather than decreases. In this sense, such systems will always “lie” in the sense that matters in clinical contexts: they will inevitably produce procedurally incorrect or unsafe workflows with non-zero probability. Over roughly the last year, however, vendors and research groups have begun to promote increasingly agentic systems for healthcare and other high-stakes domains, often presenting tool-using agents as a natural next step beyond traditional programming and clinical decision support. Many scientists and engineers who are not steeped in the details of generative modeling accept these proposals at face value or propose agentic systems of their own. The growing enthusiasm for ever more agentic systems is therefore not just philosophically troubling; it is a concrete safety concern to the extent that it ignores this structural constraint.
 
@@ -19,7 +19,7 @@ My motivation in writing this paper is straightforward: to make explicit, with s
 
 In 1980 Searle argued in his seminal ``Minds, Brain, and Programs" paper against the late‑1970s idea that a suitably programmed computer (what he called "strong AI") would literally have a mind or reveal how human minds work pass:[\cite{searle1980}]. His point was that mere manipulation of symbols according to rules (_syntax_) is not the same as grasping their meaning (_semantics_). Anthropomorphism dazzles, and shortcuts that produce good answers can fool us into ascribing understanding where there is none. Almost half a century later we have generative AI systems that are still syntactic engines, now implemented as probabilistic pattern machines in silicon. They move probability mass over a space of token sequences but do not, by themselves, come any closer to meaning or to _truth_. The probability machinery that powers the generative step also complicates determinism and reproducibility compared with Searle’s idealized lookup tables, yet it does not weaken his thesis; if anything, the probabilistic twist makes these machines less suitable in contexts where human well‑being is at stake. Certain voices nevertheless argue that such systems can be chained together to construct analyses in any context, including medical ones. But just because their outputs _seem_ correct, or are highly probable under the model, does not mean they _are_ correct in the sense that matters for patients. The appearance of correctness tells us nothing about the underlying, reproducible, deterministic truth we actually need.
 
-Like Searle responded to ideas of AI in his time, I too in this paper want to refute what warns to become a similarly entrenched, strangely unchallenged claim in today’s discourse: that agentic computation, using LLMs not merely to emit text but to assemble programs and orchestrate complex analyses on the fly, is a sound and sensible use of the technology. Where Searle, the consummate philosopher, leaned on a ``Chinese room" Gedankenexperiment, I will lean on simple mathematics, as befits my academic roots in engineering and physical sciences.
+As Searle challenged the claims about AI current in his time, I want here to challenge what now threatens to become a similarly entrenched and oddly underexamined assumption: that agentic computation, using LLMs not merely to emit text but to assemble programs and orchestrate complex analyses on the fly, is a sound and sensible use of the technology. Where Searle, the consummate philosopher, leaned on a ``Chinese room" Gedankenexperiment, I will lean on simple mathematics, as befits my academic roots in engineering and physical sciences.
 
 Of course “lies" and “hallucinations" are anthropomorphisms. A probabilistic sampler has no idea what a lie is (just as it has no ideas of any kind); it just draws a sample from a cloud. The _semantic_ meaning is assigned by the external observer (us) who decide whether that draw lands inside or outside the tiny sliver of acceptable outcomes. Searle’s man in the Chinese room was not lying about Chinese; he was following a lookup. LLMs do the same. In safety-critical domains the space of “wrong” is enormous and the space of “right” is tiny, so with non-zero probability on the wrong side agents will always “lie” in the only sense that matters: they will inevitably produce unacceptable outputs. Attempts to fix this with ever more tools and longer “reasoning traces” are reactive band-aids on the mathematical certainty of uncertainty.
 
@@ -43,72 +43,115 @@ The remainder of this paper develops the theoretical formulation, contrasts agen
 
 The core computational objects underlying modern generative AI are artificial neural networks. Historically, these constructions were loosely inspired by simplified early abstractions of biological neurons pass:[\cite{mcculloch1943}]footnote:[There is a striking historical inversion here. The original McCulloch-Pitts construction was introduced as a simplification of nervous activity, not as a biologically faithful model of neural tissue. Modern neural networks are vastly more elaborate, but elaboration is not ontological revision. The basic object remains a fully tractable mathematical surrogate. Nevertheless, contemporary discourse often treats scale and benchmark performance as if they had converted the abstraction into the thing abstracted, and sometimes as if that abstraction could surpass its biological referent on that basis alone. No empirical result or theoretical argument currently licenses that conclusion. Performance gains do not, by themselves, justify a metaphysical promotion.], but in modern machine learning they are best understood as parameterized mathematical maps composed of affine transformations and nonlinearities. Their role in this paper is not biological analogy but mathematical structure: with fixed parameters, a neural network implements a deterministic forward transformation from one vector space to another. In many practically relevant settings, this forward map is effectively compressive on the data distribution: a high-dimensional input is sent to a more compact representation, and the image of the data under that map often concentrates on a lower-dimensional manifold or structured subset of representation space.
 
-.Generic neural network diagram. For the present argument, the essential feature is that the forward pass is explicit and deterministic once the parameters are fixed.
-image::assets/images/neural-network.svg[Neural network block diagram,align=center,width=85%]
+.Schematic bias-free stem:[4 \to 3 \to 2] feedforward network used as a concrete illustration of the deterministic forward map. The essential features for the present argument are the directed, mechanical forward sweep and the compression from four scalar inputs to two scalar outputs.
+image::assets/images/4-3-2-nn.drawio.svg[Bias-free 4-3-2 feedforward network,align=center,width=85%]
 
-This deterministic and often effectively compressive forward map naturally raises the inverse question: can one move back from the compressed representation to an original input consistent with it? Generative modeling is one answer to that question. But because the forward map is generally many-to-one on the data distribution, generation does not invert the network uniquely; it parameterizes a conditional distribution over admissible outputs and samples from that distribution.
+To make the discussion concrete, consider a simple bias-free stem:[4 \to 3 \to 2] network with inputs stem:[x_1,\dots,x_4], hidden activations stem:[h_1,h_2,h_3], and outputs stem:[z_1,z_2]. I use bold lowercase symbols for vectors, bold uppercase symbols for matrices, and calligraphic symbols for spaces and sets; scalar quantities are written in ordinary italic type. Let stem:[W_{ij}] denote the weights from input stem:[i] to hidden unit stem:[j], let stem:[V_{jk}] denote the weights from hidden unit stem:[j] to output stem:[k], and let stem:[\sigma(t) = \frac{1}{1+e^{-t}}] be a sigmoid nonlinearity. Then
+
+[stem]
+++++
+h_j = \sigma\!\left(\sum_{i=1}^{4} W_{ij} x_i \right), \qquad j=1,2,3,
+++++
+
+and
+
+[stem]
+++++
+z_k = \sigma\!\left(\sum_{j=1}^{3} V_{jk} h_j \right), \qquad k=1,2.
+++++
+
+Substituting for the hidden activations gives the explicit forward map
+
+[stem]
+++++
+z_k = \sigma\!\left(\sum_{j=1}^{3} V_{jk}\,\sigma\!\left(\sum_{i=1}^{4} W_{ij} x_i \right)\right), \qquad k=1,2.
+++++
+
+Equivalently, in vector form, let stem:[\mathbf{x} \in \mathbb{R}^{1 \times 4}], stem:[\mathbf{h} \in \mathbb{R}^{1 \times 3}], and stem:[\mathbf{z} \in \mathbb{R}^{1 \times 2}], with stem:[\mathbf{W} \in \mathbb{R}^{4 \times 3}] and stem:[\mathbf{V} \in \mathbb{R}^{3 \times 2}]. Then the same forward pass can be written compactly as
+
+[stem]
+++++
+\mathbf{h} = \sigma(\mathbf{x}\mathbf{W}), \qquad \mathbf{z} = \sigma(\mathbf{h}\mathbf{V}),
+++++
+
+or, by composition,
+
+[stem]
+++++
+\mathbf{z} = \sigma\!\big(\sigma(\mathbf{x}\mathbf{W})\mathbf{V}\big),
+++++
+
+where stem:[\sigma] acts componentwise.
+
+This expression is nonlinear, but it is entirely explicit and mechanical once the weights are fixed. That is the key point: the forward pass is not mysterious, not interpretive, and not stochastic. It is simply a deterministic composition of weighted sums and pointwise nonlinearities. The crucial structural feature, however, is not nonlinearity by itself but compression: the network maps four input degrees of freedom to two output coordinates through successive non-square layers. For that reason the map is not injective in general, and a unique inverse is therefore not available in general. This deterministic and compressive forward map naturally raises the inverse question: can one move back from the representation to an original input consistent with it? Generative modeling is one answer to that question. But because the forward map is generally many-to-one on the data distribution, generation does not invert the network uniquely; it parameterizes a conditional distribution over admissible outputs and samples from that distribution.
 
 === The Probabilistic Inverse
 
-Let stem:[g : \mathbb{R}^d \to \mathbb{R}^k] denote the deterministic forward map of a network, so that
+Abstracting now from this concrete stem:[4 \to 3 \to 2] example, let the deterministic forward map be written in general form as follows.
+
+Let stem:[\mathcal{X} \subseteq \mathbb{R}^d] denote the input space and stem:[\mathcal{Z} \subseteq \mathbb{R}^k] the output, or representation, space of the forward map. Let stem:[g_{\theta} : \mathcal{X} \to \mathcal{Z}] denote the deterministic forward map implemented by a network with fixed parameters stem:[\theta], so that
 
 [stem]
 ++++
-z = g(x) .
+\mathbf{z} = g_{\theta}(\mathbf{x}) .
 ++++
 
-This naturally suggests the inverse question of whether one can move back from stem:[z] to stem:[x] by an inverse map stem:[g^{-1}], i.e.
-
-[stem]
-++++
-x = g^{-1}(z) .
-++++
-
-In general, however, such an inverse is not available. The forward map is many-to-one on the data distribution, so distinct inputs can map to the same or nearby representations. For a given representation stem:[z], the preimage
+This naturally suggests the inverse question of whether one can move back from stem:[\mathbf{z}] to stem:[\mathbf{x}] by an inverse map stem:[g_{\theta}^{-1}], i.e.
 
 [stem]
 ++++
-\mathcal{P}(z) = \{ x \in \mathbb{R}^d \mid g(x) = z \}
+\mathbf{x} = g_{\theta}^{-1}(\mathbf{z}) .
 ++++
 
-is large for a typical stem:[z]. There is therefore no unique antecedent to recover. The only meaningful reverse object is not a function stem:[g^{-1}(z)] but a conditional distribution over the compatible preimage set. Generative modeling is the mechanical process of parameterizing such a conditional distribution, written here as stem:[p_{\theta}(x \mid z)] pass:[\cite{brown2020,vaswani2017,kingma2013vae}]. Sampling then draws one member of the class:
+In general, however, such an inverse is not available. The forward map is many-to-one on the data distribution, so distinct inputs can map to the same or nearby representations. For a given representation stem:[\mathbf{z}], the preimage
 
 [stem]
 ++++
-x \sim p_{\theta}(x \mid z).
+\mathcal{P}(\mathbf{z}) = \{ \mathbf{x} \in \mathcal{X} \mid g_{\theta}(\mathbf{x}) = \mathbf{z} \}
 ++++
 
-Any decoding rule, whether stochastic (temperature/top-k/top-p) or even greedy argmax, chooses an element from the compatible set rather than inverting stem:[g] to a single input. Determinism would require collapsing stem:[p_{\theta}(x \mid z)] to a single point, which sacrifices coverage and fidelity. Because the mapping stem:[x \mapsto z] is many-to-one, the reverse direction is inherently probabilistic.
+is large for a typical stem:[\mathbf{z}]. In the concrete stem:[4 \to 3 \to 2] example above, this is the familiar fact that two output coordinates cannot, in general, uniquely recover four input coordinates: the forward map is compressive and therefore non-injective. There is therefore no unique antecedent to recover. The only meaningful reverse object is not a function stem:[g_{\theta}^{-1}(\mathbf{z})] but a conditional distribution over the compatible preimage set. Generative modeling is the mechanical process of parameterizing such a conditional distribution, written here as stem:[p_{\theta}(\mathbf{x} \mid \mathbf{z})] pass:[\cite{brown2020,vaswani2017,kingma2013vae}]. Sampling then draws one member of the class:
+
+[stem]
+++++
+\mathbf{x} \sim p_{\theta}(\mathbf{x} \mid \mathbf{z}).
+++++
+
+Any decoding rule, whether stochastic (temperature/top-k/top-p) or even greedy argmax, chooses an element from the compatible set rather than inverting stem:[g_{\theta}] to a single input. Determinism would require collapsing stem:[p_{\theta}(\mathbf{x} \mid \mathbf{z})] to a single point, which sacrifices coverage and fidelity. Because the mapping stem:[\mathbf{x} \mapsto \mathbf{z}] is many-to-one, the reverse direction is inherently probabilistic.
 
 == Why Exact Inversion Does Not Rescue Correctness
 
-The argument above establishes why the generative step is probabilistic. But even if one sets that point aside and asks whether exact inversion would solve the correctness problem, the answer is still no. The issue is not merely that a representation stem:[z] admits many compatible antecedents. It is also that only a small subset of those antecedents are semantically, clinically, or procedurally acceptable.
+The argument above establishes why the generative step is probabilistic. But even if one sets that point aside and asks whether exact inversion would solve the correctness problem, the answer is still no. The issue is not merely that a representation stem:[\mathbf{z}] admits many compatible antecedents. It is also that only a small subset of those antecedents are semantically, clinically, or procedurally acceptable.
 
-For a given representation stem:[z], define the compatible preimage set
-
-[stem]
-++++
-\mathcal{S}(z) = \{\, x \mid g(x) \approx z \,\} .
-++++
-
-This is the approximate counterpart of stem:[\mathcal{P}(z)], relaxing exact equality to neighborhood-level compatibility in representation space.
-
-A parameterized model defines a conditional distribution stem:[p_{\theta}(x \mid z)] supported on stem:[\mathcal{S}(z)]. Within stem:[\mathcal{S}(z)], only a small observer-validated subset stem:[\mathcal{G}(z) \subset \mathcal{S}(z)] corresponds to clinically acceptable outputs.
-
-The probability mass assigned to clinically acceptable outputs for stem:[z] is
+For a given representation stem:[\mathbf{z}], define the compatible preimage set
 
 [stem]
 ++++
-P_{\text{correct}}(z) = \int_{x \in \mathcal{G}(z)} p_{\theta}(x \mid z)\, dx ,
+\mathcal{S}(\mathbf{z}) = \{\, \mathbf{x} \in \mathcal{X} \mid g_{\theta}(\mathbf{x}) \approx \mathbf{z} \,\} .
 ++++
 
-and stem:[1 - P_{\text{correct}}(z)] is the mass on antecedents that are mathematically admissible or probabilistically plausible but clinically wrong. This point is logically independent of the inverse problem itself: even a deterministic selection rule over stem:[\mathcal{S}(z)] would not guarantee that the selected element lies in stem:[\mathcal{G}(z)].
+This is the approximate counterpart of stem:[\mathcal{P}(\mathbf{z})], relaxing exact equality to neighborhood-level compatibility in representation space.
+
+A parameterized model defines a conditional distribution stem:[p_{\theta}(\mathbf{x} \mid \mathbf{z})] supported on stem:[\mathcal{S}(\mathbf{z})]. Within stem:[\mathcal{S}(\mathbf{z})], only a small observer-validated subset stem:[\mathcal{G}(\mathbf{z}) \subset \mathcal{S}(\mathbf{z})] corresponds to clinically acceptable reconstructions.
+
+The probability mass assigned to clinically acceptable reconstructions for stem:[\mathbf{z}] is
+
+[stem]
+++++
+P_{\text{correct}}(\mathbf{z}) = \int_{\mathbf{x} \in \mathcal{G}(\mathbf{z})} p_{\theta}(\mathbf{x} \mid \mathbf{z})\, d\mathbf{x} ,
+++++
+
+and stem:[1 - P_{\text{correct}}(\mathbf{z})] is the mass on antecedents that are mathematically admissible or probabilistically plausible but clinically wrong. This point is logically independent of the inverse problem itself: even a deterministic selection rule over stem:[\mathcal{S}(\mathbf{z})] would not guarantee that the selected element lies in stem:[\mathcal{G}(\mathbf{z})].
 
 Full inversion of stem:[g] would not rescue correctness either. Enforcing bijectivity would eliminate compression, preserve noise, and force the model toward a degenerate edge case: a reversible lookup that cannot reduce dimension, cannot discard nuisance variation, and cannot extrapolate beyond its training support. Invertible flow families (e.g., NICE/Real NVP/Glow) explore this corner of the space but still rely on sampling and do not solve semantic correctness pass:[\cite{dinh2017realnvp,kingma2018glow}]. Two distinct patients with the same diagnosis would not map to a single clinically meaningful reconstruction; a deterministic inverse would therefore be misleading even if it were mathematically available.
 
-By contrast, practical architectures are deliberately non-square at key layers: encoders reduce stem:[n \to k] with stem:[k \ll n], and even decoder blocks introduce rank-deficient projections (e.g., attention projections of size stem:[d_{\text{model}} \times d_k], embedding tables with fewer rows than token combinations). These maps are not invertible by construction, and any inverse-like operation must therefore operate over a preimage set rather than a single exact antecedent.
+In practice, this non-injectivity is by design. Modern architectures routinely compress representations through lower-dimensional intermediate spaces, so any inverse-like operation must act over a preimage set rather than recover a single exact antecedent.
 
 Therefore, hallucination risk is structural at two levels: the mapping from prompts to outputs is underdetermined, and only a subset of the admissible output space is clinically valid. Probabilistic sampling is inherent, but even hypothetical exact inversion would not restore correctness. Determinism belongs in orchestration (IAS), not in the generative core.
+
+At first glance, encoder-decoder architectures such as U-Nets may seem to complicate this argument pass:[\cite{ronneberger2015unet}]footnote:[Here I refer to U-Nets in their standard discriminative encoder-decoder role, not to their reuse as components within generative diffusion pipelines.]. They downsample and later upsample, and so may appear to offer a deterministic analogue of inversion.
+
+They do not. In common discriminative uses such as segmentation, the upsampling path remains a deterministic feedforward computation conditioned not only on bottleneck features but also on skip-connected high-resolution features from the encoder. The decoder is therefore not selecting one antecedent from a preimage set; it is computing a task-specific output from retained input information. U-Nets are therefore not counterexamples to the distinction drawn here between deterministic forward computation and probabilistic inverse-like generation.
 
 == Theoretical Formulation of the Action Space
 

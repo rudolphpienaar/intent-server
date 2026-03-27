@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520" role="img" aria-labelledby="title desc">
+  <title id="title">Feedforward neural network with compression</title>
+  <desc id="desc">A simple fully connected network with four input nodes x1 to x4, three hidden nodes h1 to h3, and two output representation nodes z1 and z2.</desc>
+
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#425466"/>
+    </marker>
+    <style>
+      .bg { fill: #ffffff; }
+      .edge { stroke: #9fb3c8; stroke-width: 2.2; opacity: 0.9; }
+      .signal { stroke: #425466; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .node-input { fill: #d9ecff; stroke: #2a5f98; stroke-width: 2.5; }
+      .node-hidden { fill: #e7f7e7; stroke: #3c7a3c; stroke-width: 2.5; }
+      .node-output { fill: #ffe7c7; stroke: #b36b00; stroke-width: 2.5; }
+      .label { font-family: "CMU Serif", "Times New Roman", serif; font-size: 24px; fill: #1d2733; text-anchor: middle; dominant-baseline: middle; }
+      .layer { font-family: "CMU Serif", "Times New Roman", serif; font-size: 22px; font-weight: 600; fill: #425466; text-anchor: middle; }
+      .caption { font-family: "CMU Serif", "Times New Roman", serif; font-size: 20px; fill: #425466; text-anchor: middle; }
+      .flow { stroke: #425466; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .weight { font-family: "CMU Serif", "Times New Roman", serif; font-size: 16px; fill: #5b6773; text-anchor: middle; dominant-baseline: middle; stroke: #ffffff; stroke-width: 4px; paint-order: stroke fill; }
+      .signal-label { font-family: "CMU Serif", "Times New Roman", serif; font-size: 20px; fill: #1d2733; text-anchor: middle; dominant-baseline: middle; }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1200" height="520"/>
+
+  <text class="layer" x="150" y="52">Input space</text>
+  <text class="layer" x="560" y="52">Hidden layer</text>
+  <text class="layer" x="970" y="52">Output / representation space</text>
+
+  <path class="flow" d="M 220 455 C 390 490, 680 490, 900 455"/>
+  <text class="caption" x="560" y="492">deterministic forward pass with compression: 4 → 3 → 2</text>
+
+  <line class="signal" x1="40" y1="110" x2="125" y2="110"/>
+  <line class="signal" x1="40" y1="190" x2="125" y2="190"/>
+  <line class="signal" x1="40" y1="270" x2="125" y2="270"/>
+  <line class="signal" x1="40" y1="350" x2="125" y2="350"/>
+
+  <line class="edge" x1="195" y1="110" x2="525" y2="150"/>
+  <line class="edge" x1="195" y1="110" x2="525" y2="230"/>
+  <line class="edge" x1="195" y1="110" x2="525" y2="310"/>
+  <line class="edge" x1="195" y1="190" x2="525" y2="150"/>
+  <line class="edge" x1="195" y1="190" x2="525" y2="230"/>
+  <line class="edge" x1="195" y1="190" x2="525" y2="310"/>
+  <line class="edge" x1="195" y1="270" x2="525" y2="150"/>
+  <line class="edge" x1="195" y1="270" x2="525" y2="230"/>
+  <line class="edge" x1="195" y1="270" x2="525" y2="310"/>
+  <line class="edge" x1="195" y1="350" x2="525" y2="150"/>
+  <line class="edge" x1="195" y1="350" x2="525" y2="230"/>
+  <line class="edge" x1="195" y1="350" x2="525" y2="310"/>
+
+  <line class="edge" x1="595" y1="150" x2="935" y2="175"/>
+  <line class="edge" x1="595" y1="150" x2="935" y2="285"/>
+  <line class="edge" x1="595" y1="230" x2="935" y2="175"/>
+  <line class="edge" x1="595" y1="230" x2="935" y2="285"/>
+  <line class="edge" x1="595" y1="310" x2="935" y2="175"/>
+  <line class="edge" x1="595" y1="310" x2="935" y2="285"/>
+
+  <line class="signal" x1="1005" y1="175" x2="1120" y2="175"/>
+  <line class="signal" x1="1005" y1="285" x2="1120" y2="285"/>
+
+  <circle class="node-input" cx="160" cy="110" r="35"/>
+  <circle class="node-input" cx="160" cy="190" r="35"/>
+  <circle class="node-input" cx="160" cy="270" r="35"/>
+  <circle class="node-input" cx="160" cy="350" r="35"/>
+
+  <circle class="node-hidden" cx="560" cy="150" r="35"/>
+  <circle class="node-hidden" cx="560" cy="230" r="35"/>
+  <circle class="node-hidden" cx="560" cy="310" r="35"/>
+
+  <circle class="node-output" cx="970" cy="175" r="35"/>
+  <circle class="node-output" cx="970" cy="285" r="35"/>
+
+  <text class="label" x="160" y="110">x1</text>
+  <text class="label" x="160" y="190">x2</text>
+  <text class="label" x="160" y="270">x3</text>
+  <text class="label" x="160" y="350">x4</text>
+
+  <text class="label" x="560" y="150">h1</text>
+  <text class="label" x="560" y="230">h2</text>
+  <text class="label" x="560" y="310">h3</text>
+
+  <text class="label" x="970" y="175">z1</text>
+  <text class="label" x="970" y="285">z2</text>
+
+  <text class="signal-label" x="70" y="92">x1</text>
+  <text class="signal-label" x="70" y="172">x2</text>
+  <text class="signal-label" x="70" y="252">x3</text>
+  <text class="signal-label" x="70" y="332">x4</text>
+
+  <text class="signal-label" x="1145" y="175">z1</text>
+  <text class="signal-label" x="1145" y="285">z2</text>
+
+  <text class="weight" x="300" y="100">w11</text>
+  <text class="weight" x="336" y="150">w12</text>
+  <text class="weight" x="372" y="194">w13</text>
+  <text class="weight" x="286" y="164">w21</text>
+  <text class="weight" x="330" y="210">w22</text>
+  <text class="weight" x="374" y="258">w23</text>
+  <text class="weight" x="288" y="228">w31</text>
+  <text class="weight" x="332" y="272">w32</text>
+  <text class="weight" x="376" y="314">w33</text>
+  <text class="weight" x="302" y="292">w41</text>
+  <text class="weight" x="338" y="336">w42</text>
+  <text class="weight" x="374" y="382">w43</text>
+
+  <text class="weight" x="724" y="148">v11</text>
+  <text class="weight" x="800" y="190">v12</text>
+  <text class="weight" x="720" y="212">v21</text>
+  <text class="weight" x="804" y="248">v22</text>
+  <text class="weight" x="724" y="276">v31</text>
+  <text class="weight" x="800" y="312">v32</text>
+</svg>

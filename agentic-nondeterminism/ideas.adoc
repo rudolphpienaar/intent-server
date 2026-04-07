@@ -3,45 +3,28 @@
 
 == Action Space Framing
 
-For the paper, avoid introducing the action space as a DAG in the general case.
-That creates an unnecessary side trail because many realistic orchestration
-systems contain retries, backtracking, polling, revisitation, or other loop-like
-structure. The more general and safer formal object is a directed graph
-stem:[G = (V, E)].
+For the paper, avoid introducing the action space as a DAG in the general case. That creates an unnecessary side trail because many realistic orchestration systems contain retries, backtracking, polling, revisitation, or other loop-like structure. The more general and safer formal object is a directed graph stem:[G = (V, E)].
 
 Useful phrasing:
 
-"We model the executable action space as a directed graph. In simple fixed-length
-workflows with no revisitation, this may be visualized as an acyclic workflow
-graph, but the argument does not depend on acyclicity. What matters is that the
-system faces a reachable set of alternative action paths, some valid and some
-invalid, and that a probabilistic policy places non-zero mass on more than one
-continuation."
+"We model the executable action space as a directed graph. In simple fixed-length workflows with no revisitation, this may be visualized as an acyclic workflow graph, but the argument does not depend on acyclicity. What matters is that the system faces a reachable set of alternative action paths, some valid and some invalid, and that a probabilistic policy places non-zero mass on more than one continuation."
 
 == Graph Theory Concepts That Actually Matter
 
-This section really does map to graph theory, but only a focused subset of graph
-theory is useful. The most relevant concepts are:
+This section really does map to graph theory, but only a focused subset of graph theory is useful. The most relevant concepts are:
 
-* directed graph: tools, actions, or workflow states as vertices; admissible
-  transitions as directed edges.
+* directed graph: tools, actions, or workflow states as vertices; admissible transitions as directed edges.
 * path: a workflow is a path through the directed graph.
-* reachability: which nodes, states, or regions are actually reachable from a
-  given intent-conditioned start state.
-* branching factor / out-degree: the number of admissible next actions at a
-  decision point; this is central to combinatorial growth.
+* reachability: which nodes, states, or regions are actually reachable from a given intent-conditioned start state.
+* branching factor / out-degree: the number of admissible next actions at a decision point; this is central to combinatorial growth.
 * path length: longer workflows expose more opportunities for deviation.
-* cycles / revisitation: important for retries, loops, backtracking, and
-  repeated decision points.
-* absorbing states: failure and success can be represented as absorbing states
-  in an extended transition graph.
-* valid versus invalid path sets: often the key object is not merely a valid
-  subgraph, but a constrained set of valid paths.
+* cycles / revisitation: important for retries, loops, backtracking, and repeated decision points.
+* absorbing states: failure and success can be represented as absorbing states in an extended transition graph.
+* valid versus invalid path sets: often the key object is not merely a valid subgraph, but a constrained set of valid paths.
 
 Important note:
 
-The clinically valid region is often better defined as a set of valid paths
-rather than a valid subgraph. Many constraints are path-dependent:
+The clinically valid region is often better defined as a set of valid paths rather than a valid subgraph. Many constraints are path-dependent:
 
 * a step may be valid only if some prior step occurred,
 * some actions may be permitted only once,
@@ -50,30 +33,22 @@ rather than a valid subgraph. Many constraints are path-dependent:
 
 Useful sentence for the paper:
 
-"The action space is naturally represented in graph-theoretic terms: tools
-define a directed graph, workflows are paths, and orchestration safety depends
-not merely on node reachability but on whether the realized path belongs to a
-much smaller set of clinically valid paths."
+"The action space is naturally represented in graph-theoretic terms: tools define a directed graph, workflows are paths, and orchestration safety depends not merely on node reachability but on whether the realized path belongs to a much smaller set of clinically valid paths."
 
 == ARGUS as a Corollary / Intermediate Regime
 
-ARGUS appears to be a very useful corollary or boundary case for the theory. It
-is not a counterexample to the main argument. Rather, it is an example of a
-middle regime between open agentic orchestration and fully collapsed IAS.
+ARGUS appears to be a very useful corollary or boundary case for the theory. It is not a counterexample to the main argument. Rather, it is an example of a middle regime between open agentic orchestration and fully collapsed IAS.
 
 The key insight:
 
-ARGUS does not allow the LLM to wander freely over the full action graph. It
-repeatedly re-grounds the model against materialized external state and
-restricts available intents according to current workflow position.
+ARGUS does not allow the LLM to wander freely over the full action graph. It repeatedly re-grounds the model against materialized external state and restricts available intents according to current workflow position.
 
 This means:
 
 * the reachable action space is reduced at each step,
 * the local branching factor is reduced,
 * the model is less free to hallucinate workflow structure,
-* but risk is not driven to zero unless the remaining transition from intent to
-  execution is deterministic.
+* but risk is not driven to zero unless the remaining transition from intent to execution is deterministic.
 
 This gives a useful spectrum:
 
@@ -81,93 +56,88 @@ This gives a useful spectrum:
 The LLM samples over a large reachable action graph of primitive operations.
 
 . State-grounded constrained agent:
-The LLM is repeatedly grounded against materialized state and can only choose
-among intents/actions admissible from that state.
+The LLM is repeatedly grounded against materialized state and can only choose among intents/actions admissible from that state.
 
 . IAS:
-The LLM maps language to intent only; deterministic software compiles and
-executes a single canonical workflow.
+The LLM maps language to intent only; deterministic software compiles and executes a single canonical workflow.
 
 Possible formalization:
 
-Let stem:[x_t] denote the externally materialized state at time stem:[t]. Let
-stem:[A(x_t)] denote the set of admissible next intents or actions from that
-state. Then the policy is no longer unconstrained stem:[\pi(a_t \mid h_t)], but
-state-conditioned and support-restricted:
+Let stem:[x_t] denote the externally materialized state at time stem:[t]. Let stem:[A(x_t)] denote the set of admissible next intents or actions from that state. Then the policy is no longer unconstrained stem:[\pi(a_t \mid h_t)], but state-conditioned and support-restricted:
 
 [stem]
 +++
 \operatorname{supp}\big(\pi(\cdot \mid h_t, x_t)\big) \subseteq A(x_t).
 +++
 
-After each executed step, the environment materializes new state stem:[x_{t+1}],
-and the admissible set is recomputed. This repeatedly projects the system onto a
-smaller local action region.
+After each executed step, the environment materializes new state stem:[x_{t+1}], and the admissible set is recomputed. This repeatedly projects the system onto a smaller local action region.
 
 Interpretation:
 
 * external state grounding does not eliminate probabilistic choice,
 * it shrinks the effective local action space,
 * therefore it reduces local error rates stem:[\varepsilon_t(h_t)],
-* but does not force stem:[\varepsilon_t(h_t) = 0] unless all invalid
-  continuations are excluded and execution is deterministic.
+* but does not force stem:[\varepsilon_t(h_t) = 0] unless all invalid continuations are excluded and execution is deterministic.
 
 Useful sentence for the paper:
 
-"Systems such as ARGUS illustrate an intermediate architecture in which the
-model is repeatedly grounded against materialized external state and its
-admissible next actions are restricted by workflow topology. This does not
-eliminate probabilistic error, but it shrinks the effective local action space
-at each decision point. In our terms, it reduces local hazard without
-collapsing it to zero unless the remaining transition from intent to execution
-is deterministic."
+"Systems such as ARGUS illustrate an intermediate architecture in which the model is repeatedly grounded against materialized external state and its admissible next actions are restricted by workflow topology. This does not eliminate probabilistic error, but it shrinks the effective local action space at each decision point. In our terms, it reduces local hazard without collapsing it to zero unless the remaining transition from intent to execution is deterministic."
 
 == Evidence from ARGUS Docs
 
 Relevant documentation threads observed in `/home/rudolph/src/argus/docs`:
 
-* `agentic.adoc`: deterministic routing intercepts workflow-relevant queries
-  before the LLM; the LLM is fallback and guidance rather than open-ended
-  action selector.
-* `vcs.adoc`: truth is materialized in the VFS; the system rejects
-  assertion-based state in favor of artifact-grounded state.
-* `dag-engine.adoc`: runtime position is reconstructed from artifact evidence
-  and manifest topology; execution is constrained by materialized graph state.
-* `why-not-agentic.adoc`: the design explicitly limits the AI to intent
-  interpretation while deterministic plugins execute and materialize state.
+* `agentic.adoc`: deterministic routing intercepts workflow-relevant queries before the LLM; the LLM is fallback and guidance rather than open-ended action selector.
+* `vcs.adoc`: truth is materialized in the VFS; the system rejects assertion-based state in favor of artifact-grounded state.
+* `dag-engine.adoc`: runtime position is reconstructed from artifact evidence and manifest topology; execution is constrained by materialized graph state.
+* `why-not-agentic.adoc`: the design explicitly limits the AI to intent interpretation while deterministic plugins execute and materialize state.
 
-This makes ARGUS a practical example of partial action-space collapse through
-externalized state truth and topology-constrained dispatch.
+This makes ARGUS a practical example of partial action-space collapse through externalized state truth and topology-constrained dispatch.
+
+== Taggart's "It Worked, I Hated It" as Supporting Narrative Evidence
+
+Nina Taggart's essay link:https://taggart-tech.com/reckoning/["I used AI. It worked. I hated it." (published March 30, 2026)] is useful supporting material for this paper's argument, not because it proves the theorem, but because it independently rediscovers many of the same architectural boundaries in lived software practice.
+
+What makes the essay especially relevant is that it is not a naive anti-AI rejection piece and it is not booster hype either. It is an account from someone who used an agentic coding workflow, got a working system, and still came away convinced that the process is structurally dangerous unless bounded by external controls.
+
+The strongest connections to the present argument are:
+
+* the model performed best when constrained by external plans, task files, tests, compile checks, and audit artifacts rather than by self-generated reasoning alone;
+* success depended on deterministic validation loops such as `cargo check` and `cargo test`, i.e. external mechanisms that collapse uncertainty by forcing machine-checkable pass/fail boundaries;
+* the workflow remained safe only insofar as a human carefully reviewed output, yet the process itself was described as psychologically optimized to make the human stop reviewing;
+* the reported hallucinations were often recoverable precisely because external tool feedback rejected invented methods or unsafe code paths;
+* even in a relatively bounded coding domain, the author still found security defects and a non-obvious DoS issue, reinforcing that apparently fluent local outputs do not imply safe global behavior.
+
+This is useful because it sharpens a subtle point in the paper: "human in the loop" is not a stable safety argument when the loop itself is fatiguing, stultifying, and constantly pushes the operator toward rubber-stamping. In other words, adding a nominal human checkpoint does not necessarily collapse the action space in a reliable way. It may only insert a fragile reviewer into a process whose ergonomics encourage deference to the probabilistic generator.
+
+Possible synthesis sentence for the paper:
+
+"Recent practitioner accounts of agentic coding show the same boundary from the opposite direction: these systems can be made useful when embedded inside external plans, tests, compilers, logs, and human review, but the workflow itself tends to erode scrutiny and invite over-trust. What rescues utility is not the agent's internal reasoning trace, but deterministic external verification."
+
+This source may fit well in a discussion paragraph about why:
+
+* external grounding works by shrinking freedom and forcing contact with machine-checkable reality,
+* "show your work" is insufficient when the work is still self-generated, and
+* practical safety depends on moving truth and execution authority outside the model.
 
 == Potential Paper Use
 
 Possible places this material could go:
 
-* strengthen the introduction to the theory section by explicitly naming the
-  graph-theoretic framing,
-* add a short paragraph explaining why "directed graph" is the right general
-  object and why DAG should be treated only as a special case,
-* add a corollary or discussion subsection on state-grounded constrained agents
-  as an intermediate point on the MCP-to-IAS spectrum,
-* use ARGUS as an existence proof that repeated external grounding reduces risk
-  even when it does not fully eliminate probabilistic freedom.
+* strengthen the introduction to the theory section by explicitly naming the graph-theoretic framing,
+* add a short paragraph explaining why "directed graph" is the right general object and why DAG should be treated only as a special case,
+* add a corollary or discussion subsection on state-grounded constrained agents as an intermediate point on the MCP-to-IAS spectrum,
+* use ARGUS as an existence proof that repeated external grounding reduces risk even when it does not fully eliminate probabilistic freedom.
 
 == Paper Type: Theory vs Experiments
 
-Current thought: this paper does not necessarily need actual experiments to be a
-legitimate and strong contribution. Its central claim is theoretical and
-architectural:
+Current thought: this paper does not necessarily need actual experiments to be a legitimate and strong contribution. Its central claim is theoretical and architectural:
 
-* probabilistic generation cannot guarantee safe orchestration over large action
-  spaces,
-* collapsing runtime action freedom is the only way to drive orchestration risk
-  to zero,
+* probabilistic generation cannot guarantee safe orchestration over large action spaces,
+* collapsing runtime action freedom is the only way to drive orchestration risk to zero,
 * IAS is the architectural consequence of that constraint.
 
-This places the paper closer to a theory / conceptual / architectural analysis
-than to an empirical benchmark paper. Searle is a useful comparison in spirit:
-the contribution is to attack a claim at the level of principle rather than to
-measure a phenomenon experimentally.
+This places the paper closer to a theory / conceptual / architectural analysis than to an empirical benchmark paper. Searle is a useful comparison in spirit: the contribution is to attack a claim at the level of principle rather than to measure a phenomenon experimentally.
 
 Important distinction:
 
@@ -176,29 +146,18 @@ Important distinction:
 
 Therefore:
 
-* if the claims remain at the level of existence, structure, and architectural
-  consequence, then no experiment is strictly necessary;
-* if the paper starts making quantitative claims about observed rates, practical
-  superiority, or effect size in deployed systems, then empirical evidence would
-  become necessary.
+* if the claims remain at the level of existence, structure, and architectural consequence, then no experiment is strictly necessary;
+* if the paper starts making quantitative claims about observed rates, practical superiority, or effect size in deployed systems, then empirical evidence would become necessary.
 
 Recommended positioning:
 
-* frame the paper explicitly as a theoretical and architectural analysis, not an
-  empirical performance study;
-* keep a short section describing empirical implications, validation pathway, or
-  future experimental program;
-* avoid adding weak or toy experiments merely for decoration, since poor
-  experiments could weaken an otherwise strong theoretical paper.
+* frame the paper explicitly as a theoretical and architectural analysis, not an empirical performance study;
+* keep a short section describing empirical implications, validation pathway, or future experimental program;
+* avoid adding weak or toy experiments merely for decoration, since poor experiments could weaken an otherwise strong theoretical paper.
 
 Possible wording idea:
 
-"This paper is a theoretical and architectural analysis rather than an empirical
-performance study. Its contribution is to formalize why orchestration risk is a
-structural property of probabilistic agents operating over large action spaces,
-and why deterministic intent-to-action compilation follows as an architectural
-consequence. Empirical work remains necessary to estimate the magnitude and
-practical incidence of these effects in particular deployed systems."
+"This paper is a theoretical and architectural analysis rather than an empirical performance study. Its contribution is to formalize why orchestration risk is a structural property of probabilistic agents operating over large action spaces, and why deterministic intent-to-action compilation follows as an architectural consequence. Empirical work remains necessary to estimate the magnitude and practical incidence of these effects in particular deployed systems."
 
 Possible section rename:
 
@@ -208,6 +167,4 @@ Possible section rename:
 
 Rationale:
 
-This preserves credibility. It tells the reader the paper is not pretending to
-have already validated everything experimentally, while still demonstrating that
-the theory makes testable predictions.
+This preserves credibility. It tells the reader the paper is not pretending to have already validated everything experimentally, while still demonstrating that the theory makes testable predictions.

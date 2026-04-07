@@ -49,7 +49,10 @@ code, pre, kbd, samp, .listingblock .content pre {
     /* CMU Typewriter Text is the actual webfont family name provided by computer-modern. */
     font-family: "CMU Typewriter Text", "Computer Modern Typewriter", "Latin Modern Mono", "Courier New", monospace !important;
     font-size: 0.95em; /* Optical adjustment: CM Typewriter can look large */
+    color: #000 !important;
     background-color: #f0f0f0; /* Light gray background for contrast */
+    opacity: 1 !important;
+    -webkit-text-fill-color: #000;
 }
 
 /* 4. Headings */
